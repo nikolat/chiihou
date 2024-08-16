@@ -5,13 +5,14 @@
     createRxBackwardReq,
     uniq,
     type EventPacket,
+    type RxNostr,
   } from 'rx-nostr';
   import { verifier } from 'rx-nostr-crypto';
   import { onMount } from 'svelte';
-  import { defaultRelays, getRoboHashURL } from '$lib/config';
+  import { defaultRelays, getRoboHashURL, linkGitHub } from '$lib/config';
   import {
     getEmojiUrl,
-    insertEventIntoAscendingList,
+    insertEventIntoDescendingList,
     setFuro,
     sortEvents,
   } from '$lib/utils';
@@ -21,7 +22,7 @@
     stringToArrayPlain,
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
-  import { nip19, type NostrEvent } from 'nostr-tools';
+  import { nip19, type Nostr, type NostrEvent } from 'nostr-tools';
   import { Subject } from 'rxjs';
 
   let events: NostrEvent[] = [];
@@ -39,15 +40,83 @@
   let result: string;
   let sutehaiSaved: string;
 
+  let loginPubkey: string | undefined;
+  let lastEventToReply: NostrEvent | undefined;
+
+  let rxNostr: RxNostr;
+  const mahjongRoomId =
+    'c8d5c2709a5670d6f621ac8020ac3e4fc3057a4961a15319f7c0818309407723';
+  const mahjongServerPubkey =
+    '93e68a5f7bf6d35f0cb1288160e42ecdb3396b80bb686a528199dfc5e58ceb25';
+
   const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
   const sleepInterval = 500;
 
+  const getNpubWithNIP07 = async (): Promise<void> => {
+    const nostr = window.nostr;
+    let pubkey: string | undefined;
+    if (nostr?.getPublicKey) {
+      try {
+        pubkey = await nostr.getPublicKey();
+      } catch (error) {
+        console.error(error);
+        return;
+      }
+      loginPubkey = pubkey;
+    }
+  };
+
+  const sendDapai = (pai: string) => {
+    if (lastEventToReply === undefined) return;
+    rxNostr.send({
+      kind: 42,
+      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? sutehai ${pai}`,
+      tags: getTagsReply(lastEventToReply),
+    });
+  };
+
+  const sendMention = (message: string) => {
+    rxNostr.send({
+      kind: 42,
+      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} ${message}`,
+      tags: [
+        ['e', mahjongRoomId, '', 'root'],
+        ['p', mahjongServerPubkey, ''],
+      ],
+    });
+  };
+
+  const sendReply = (message: string) => {
+    if (lastEventToReply === undefined) return;
+    rxNostr.send({
+      kind: 42,
+      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} naku? ${message}`,
+      tags: getTagsReply(lastEventToReply),
+    });
+  };
+
+  const getTagsReply = (event: NostrEvent): string[][] => {
+    const tagsReply: string[][] = [];
+    const tagRoot = event.tags.find(
+      (tag) => tag.length >= 3 && tag[0] === 'e' && tag[3] === 'root',
+    );
+    if (tagRoot !== undefined) {
+      tagsReply.push(tagRoot);
+      tagsReply.push(['e', event.id, '', 'reply']);
+    } else {
+      tagsReply.push(['e', event.id, '', 'root']);
+    }
+    for (const tag of event.tags.filter(
+      (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] !== event.pubkey,
+    )) {
+      tagsReply.push(tag);
+    }
+    tagsReply.push(['p', event.pubkey, '']);
+    return tagsReply;
+  };
+
   onMount(() => {
-    const mahjongRoomId =
-      'c8d5c2709a5670d6f621ac8020ac3e4fc3057a4961a15319f7c0818309407723';
-    const mahjongServerPubkey =
-      '93e68a5f7bf6d35f0cb1288160e42ecdb3396b80bb686a528199dfc5e58ceb25';
-    const rxNostr = createRxNostr({ verifier });
+    rxNostr = createRxNostr({ verifier });
     rxNostr.setDefaultRelays(defaultRelays);
 
     const rxReqB = createRxBackwardReq();
@@ -88,8 +157,13 @@
         startIndex++;
       }
       events = events.slice(0, startIndex + 1);
-      await replay(events.toReversed());
-      //rxReqF.emit({ kinds: [42], authors: [mahjongServerPubkey], '#e': [mahjongRoomId], since: now })
+      await replay(events.toReversed(), sleepInterval);
+      rxReqF.emit({
+        kinds: [42],
+        authors: [mahjongServerPubkey],
+        '#e': [mahjongRoomId],
+        since: now,
+      });
     };
     const subscriptionB = rxNostr
       .use(rxReqB)
@@ -99,9 +173,9 @@
       .use(rxReqF)
       .pipe(uniq(flushes$))
       .subscribe((packet) => {
-        console.log(packet);
-        events.push(packet.event);
-        events = insertEventIntoAscendingList(events, packet.event);
+        //console.log(packet);
+        events = insertEventIntoDescendingList(events, packet.event);
+        replay([packet.event]);
       });
     rxReqB.emit({
       kinds: [42],
@@ -112,10 +186,15 @@
     });
     rxReqB.over();
 
-    const replay = async (events: NostrEvent[]) => {
+    const replay = async (events: NostrEvent[], sleepInterval?: number) => {
       for (const ev of events) {
+        if (ev.content.includes('GET')) {
+          lastEventToReply = ev;
+          continue;
+        }
         if (ev.content.includes('NOTIFY')) {
-          await sleep(sleepInterval);
+          //lastEventToReply = undefined;
+          if (sleepInterval !== undefined) await sleep(sleepInterval);
           const m = ev.content.match(
             /NOTIFY\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
           );
@@ -127,6 +206,9 @@
               bafu = m[2];
               tsumibou = parseInt(m[4]);
               kyoutaku = parseInt(m[5]);
+              tehai = new Map<string, string>();
+              tsumohai = new Map<string, string>();
+              sutehai = new Map<string, string>();
               break;
             case 'point':
               const playerName = m[2];
@@ -249,7 +331,93 @@
   <title>rs-nostr-practice</title>
 </svelte:head>
 
-<header><h1>rs-nostr-practice</h1></header>
+<header>
+  <h1>rs-nostr-practice</h1>
+  {#if loginPubkey === undefined}
+    <button on:click={getNpubWithNIP07}>NIP-07 Login</button>
+  {:else}
+    <button
+      on:click={() => {
+        loginPubkey = undefined;
+      }}>Logout</button
+    >
+    {nip19.npubEncode(loginPubkey)}
+    <br />
+    <button
+      on:click={() => {
+        sendMention('ping');
+      }}>Ping</button
+    >
+    <button
+      on:click={() => {
+        sendMention('help');
+      }}>Help</button
+    >
+    <button
+      on:click={() => {
+        sendMention('reset');
+      }}>Reset</button
+    >
+    <button
+      on:click={() => {
+        sendMention('gamestart');
+      }}>GameStart</button
+    >
+    <button
+      on:click={() => {
+        sendMention('status');
+      }}>Status</button
+    >
+    <button
+      on:click={() => {
+        sendMention('next');
+      }}>Next</button
+    >
+    <br />
+    <button
+      disabled={lastEventToReply === undefined}
+      on:click={() => {
+        sendReply('no');
+      }}>no</button
+    >
+    <button
+      disabled={lastEventToReply === undefined}
+      on:click={() => {
+        sendReply('pon');
+      }}>pon</button
+    >
+    <button
+      disabled={true}
+      on:click={() => {
+        sendReply('chi');
+      }}>chi</button
+    >
+    <button
+      disabled={true}
+      on:click={() => {
+        sendReply('kan');
+      }}>chi</button
+    >
+    <button
+      disabled={true}
+      on:click={() => {
+        sendReply('richi');
+      }}>richi</button
+    >
+    <button
+      disabled={lastEventToReply === undefined}
+      on:click={() => {
+        sendReply('ron');
+      }}>ron</button
+    >
+    <button
+      disabled={true}
+      on:click={() => {
+        sendReply('tsumo');
+      }}>tsumo</button
+    >
+  {/if}
+</header>
 <main>
   <h2>Info</h2>
   <p>
@@ -277,31 +445,49 @@
         {say.get(key) ? `＜ [${say.get(key)}]` : ''}
       </dt>
       <dd>
-        {#each paigazouTehai?.at(0) ?? [] as paigazou}
-          <img class="pai" alt={paigazou} src={getEmojiUrl(paigazou)} />
+        {#each paigazouTehai?.at(0) ?? [] as pai}
+          {#if loginPubkey === key && lastEventToReply !== undefined}
+            <button class="dapai" on:click={() => sendDapai(pai)}
+              ><img class="pai" alt={pai} src={getEmojiUrl(pai)} /></button
+            >
+          {:else}
+            <img class="pai" alt={pai} src={getEmojiUrl(pai)} />
+          {/if}
         {/each}
-        {#each paigazouTehai?.at(1) ?? [] as paigazou}
-          {@const pa = stringToArrayPlain(paigazou)}
+        {#each paigazouTehai?.at(1) ?? [] as pai}
+          {@const pa = stringToArrayPlain(pai)}
           &lt;
           {#each pa as p}
-            <img class="pai" alt={paigazou} src={getEmojiUrl(p)} />
+            <img class="pai" alt={pai} src={getEmojiUrl(p)} />
           {/each}
           &gt;
         {/each}
-        {#each paigazouTehai?.at(2) ?? [] as paigazou}
-          {@const pa = stringToArrayPlain(paigazou)}
+        {#each paigazouTehai?.at(2) ?? [] as pai}
+          {@const pa = stringToArrayPlain(pai)}
           (
           {#each pa as p}
-            <img class="pai" alt={paigazou} src={getEmojiUrl(p)} />
+            <img class="pai" alt={pai} src={getEmojiUrl(p)} />
           {/each}
           )
         {/each}
         {#if tsumohai.get(key)?.length ?? 0 > 0}
-          <img
-            class="pai"
-            alt={tsumohai.get(key)}
-            src={getEmojiUrl(tsumohai.get(key) ?? '')}
-          />
+          {#if loginPubkey === key && lastEventToReply !== undefined}
+            <button
+              class="dapai"
+              on:click={() => sendDapai(tsumohai.get(key) ?? '')}
+              ><img
+                class="pai"
+                alt={tsumohai.get(key)}
+                src={getEmojiUrl(tsumohai.get(key) ?? '')}
+              /></button
+            >
+          {:else}
+            <img
+              class="pai"
+              alt={tsumohai.get(key)}
+              src={getEmojiUrl(tsumohai.get(key) ?? '')}
+            />
+          {/if}
         {/if}
         <br />
         {#each paigazouSutehai as paigazou}
@@ -312,14 +498,16 @@
   </dl>
   <h2>Log</h2>
   <dl class="log">
-    {#each events.toReversed() as event}
+    {#each events as event}
       <dt><time>{new Date(1000 * event.created_at).toLocaleString()}</time></dt>
       <dd>{event.content}</dd>
     {/each}
   </dl>
 </main>
 <footer>
-  牌画像 (c) <a
+  <a href={linkGitHub} target="_blank" rel="noopener noreferrer">GitHub</a>
+  牌画像 (c)
+  <a
     href="https://awayuki.github.io/emojis.html#mahjong"
     target="_blank"
     rel="noopener noreferrer">awayuki</a
@@ -331,14 +519,22 @@
     height: 80px;
   }
   .player {
-    max-height: 64px;
+    height: 64px;
   }
   .pai {
-    max-height: 30px;
+    height: 30px;
   }
   .log {
     border: 1px gray solid;
-    max-height: 10em;
+    height: 10em;
     overflow-y: auto;
+  }
+  button.dapai {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    height: 30px;
+    cursor: pointer;
   }
 </style>

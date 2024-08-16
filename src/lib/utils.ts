@@ -2,23 +2,38 @@ import type { NostrEvent } from 'nostr-tools/core';
 import { binarySearch } from 'nostr-tools/utils';
 import { compareFn, removeHai, stringToArrayWithFuro } from './mjlib/mj_common';
 
-export function sortEvents(events: NostrEvent[]): NostrEvent[] {
+export const sortEvents = (events: NostrEvent[]): NostrEvent[] => {
   return events.sort((a: NostrEvent, b: NostrEvent): number => {
     if (a.created_at !== b.created_at) {
       return b.created_at - a.created_at;
     }
     return b.id.localeCompare(a.id);
   });
-}
+};
 
-export function insertEventIntoAscendingList(
+export const insertEventIntoAscendingList = (
+  sortedArray: NostrEvent[],
+  event: NostrEvent,
+): NostrEvent[] => {
+  const [idx, found] = binarySearch(sortedArray, (b) => {
+    if (event.id === b.id) return 0;
+    if (event.created_at === b.created_at) return event.id.localeCompare(b.id);
+    return event.created_at - b.created_at;
+  });
+  if (!found) {
+    sortedArray.splice(idx, 0, event);
+  }
+  return sortedArray;
+};
+
+export function insertEventIntoDescendingList(
   sortedArray: NostrEvent[],
   event: NostrEvent,
 ): NostrEvent[] {
   const [idx, found] = binarySearch(sortedArray, (b) => {
     if (event.id === b.id) return 0;
-    if (event.created_at === b.created_at) return event.id.localeCompare(b.id);
-    return event.created_at - b.created_at;
+    if (event.created_at === b.created_at) return b.id.localeCompare(event.id);
+    return b.created_at - event.created_at;
   });
   if (!found) {
     sortedArray.splice(idx, 0, event);
@@ -53,6 +68,10 @@ const addFuro = (
   }
 };
 
+export const getEmojiUrl = (pai: string): string => {
+  return awayuki_mahjong_emojis[convertEmoji(pai)];
+};
+
 const convertEmoji = (pai: string) => {
   if (['m', 'p', 's'].includes(pai.at(1) ?? '')) {
     return `mahjong_${pai.at(1)}${pai.at(0)}`;
@@ -78,10 +97,6 @@ const convertEmoji = (pai: string) => {
   } else {
     throw TypeError(`Unknown pai: ${pai}`);
   }
-};
-
-export const getEmojiUrl = (pai: string): string => {
-  return awayuki_mahjong_emojis[convertEmoji(pai)];
 };
 
 const awayuki_mahjong_emojis: any = {
