@@ -47,6 +47,7 @@
   let result: string;
   let sutehaiSaved: string;
   let sutehaiCommand: string;
+  let nokori: number;
 
   let loginPubkey: string | undefined;
   let lastEventToReply: NostrEvent | undefined;
@@ -285,7 +286,7 @@
               break;
             case 'tsumo':
               const playerNameT = m[2];
-              const nokori = m[3];
+              nokori = parseInt(m[3]);
               const paiT = m[4];
               const npubT = playerNameT.replace('nostr:', '');
               const pubkeyT = nip19.decode(npubT).data as string;
@@ -467,7 +468,8 @@
       disabled={lastEventToReply === undefined ||
         requestedCommand !== 'sutehai?' ||
         sutehaiCommand === 'richi' ||
-        isRichi.get(loginPubkey)}
+        isRichi.get(loginPubkey) ||
+        nokori === 0}
       on:click={() => {
         setSutehai('richi');
       }}>richi</button
@@ -489,7 +491,7 @@
         class="pai"
         alt={p}
         src={getEmojiUrl(p)}
-      />{/each}
+      />{/each} 残り{nokori ?? 0}枚
   </p>
   <pre>{result ?? ''}</pre>
   <h2>Players</h2>
