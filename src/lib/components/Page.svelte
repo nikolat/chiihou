@@ -9,7 +9,13 @@
   } from 'rx-nostr';
   import { verifier } from 'rx-nostr-crypto';
   import { onMount } from 'svelte';
-  import { defaultRelays, getRoboHashURL, linkGitHub } from '$lib/config';
+  import {
+    defaultRelays,
+    getRoboHashURL,
+    linkGitHub,
+    mahjongRoomId,
+    mahjongServerPubkey,
+  } from '$lib/config';
   import {
     getEmojiUrl,
     insertEventIntoDescendingList,
@@ -22,7 +28,7 @@
     stringToArrayPlain,
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
-  import { nip19, type Nostr, type NostrEvent } from 'nostr-tools';
+  import { nip19, type NostrEvent } from 'nostr-tools';
   import { Subject } from 'rxjs';
 
   let events: NostrEvent[] = [];
@@ -33,21 +39,21 @@
   let tsumohai: Map<string, string> = new Map<string, string>();
   let sutehai: Map<string, string> = new Map<string, string>();
   let say: Map<string, string> = new Map<string, string>();
+  let isRichi: Map<string, boolean> = new Map<string, boolean>();
   let bafu: string;
   let tsumibou: number;
   let kyoutaku: number;
   let dorahyoujihai: string;
   let result: string;
   let sutehaiSaved: string;
+  let sutehaiCommand: string;
 
   let loginPubkey: string | undefined;
   let lastEventToReply: NostrEvent | undefined;
+  let requestedCommand: string | undefined;
+  let nakuKinds: string[] | undefined;
 
   let rxNostr: RxNostr;
-  const mahjongRoomId =
-    'c8d5c2709a5670d6f621ac8020ac3e4fc3057a4961a15319f7c0818309407723';
-  const mahjongServerPubkey =
-    '93e68a5f7bf6d35f0cb1288160e42ecdb3396b80bb686a528199dfc5e58ceb25';
 
   const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
   const sleepInterval = 500;
@@ -70,9 +76,10 @@
     if (lastEventToReply === undefined) return;
     rxNostr.send({
       kind: 42,
-      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? sutehai ${pai}`,
+      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
       tags: getTagsReply(lastEventToReply),
     });
+    sutehaiCommand = 'sutehai';
   };
 
   const sendMention = (message: string) => {
@@ -93,6 +100,10 @@
       content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} naku? ${message}`,
       tags: getTagsReply(lastEventToReply),
     });
+  };
+
+  const setSutehai = (value: string) => {
+    sutehaiCommand = value;
   };
 
   const getTagsReply = (event: NostrEvent): string[][] => {
@@ -157,7 +168,10 @@
         startIndex++;
       }
       events = events.slice(0, startIndex + 1);
-      await replay(events.toReversed(), sleepInterval);
+      const isKyokuEnd = events.some((ev) =>
+        ev.content.includes('NOTIFY kyokuend'),
+      );
+      await replay(events.toReversed(), isKyokuEnd ? sleepInterval : 0);
       rxReqF.emit({
         kinds: [42],
         authors: [mahjongServerPubkey],
@@ -188,13 +202,36 @@
 
     const replay = async (events: NostrEvent[], sleepInterval?: number) => {
       for (const ev of events) {
-        if (ev.content.includes('GET')) {
+        if (
+          ev.content.includes('GET') &&
+          loginPubkey !== undefined &&
+          ev.tags.some(
+            (tag) =>
+              tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+          )
+        ) {
           lastEventToReply = ev;
+          const m = ev.content.match(
+            /GET\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
+          );
+          if (m === null) return;
+          const command = m[1];
+          requestedCommand = command;
+          if (command === 'naku?') {
+            let i = 2;
+            nakuKinds = [];
+            while (m[i] !== undefined) {
+              nakuKinds.push(m[i]);
+              i++;
+            }
+          }
           continue;
         }
         if (ev.content.includes('NOTIFY')) {
-          //lastEventToReply = undefined;
           if (sleepInterval !== undefined) await sleep(sleepInterval);
+          lastEventToReply = undefined;
+          requestedCommand = undefined;
+          nakuKinds = undefined;
           const m = ev.content.match(
             /NOTIFY\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
           );
@@ -209,6 +246,9 @@
               tehai = new Map<string, string>();
               tsumohai = new Map<string, string>();
               sutehai = new Map<string, string>();
+              say = new Map<string, string>();
+              isRichi = new Map<string, boolean>();
+              sutehaiCommand = 'sutehai';
               break;
             case 'point':
               const playerName = m[2];
@@ -282,6 +322,7 @@
                 kyoutaku += 1000;
                 points.set(pubkeySS, points.get(pubkeySS)! - 1000);
                 points = points;
+                isRichi.set(pubkeySS, true);
               }
               break;
             case 'open':
@@ -375,45 +416,66 @@
     >
     <br />
     <button
-      disabled={lastEventToReply === undefined}
+      disabled={lastEventToReply === undefined || requestedCommand !== 'naku?'}
       on:click={() => {
         sendReply('no');
       }}>no</button
     >
     <button
-      disabled={lastEventToReply === undefined}
+      disabled={lastEventToReply === undefined ||
+        requestedCommand !== 'naku?' ||
+        !nakuKinds?.includes('pon')}
       on:click={() => {
         sendReply('pon');
       }}>pon</button
     >
     <button
-      disabled={true}
+      disabled={lastEventToReply === undefined ||
+        requestedCommand !== 'naku?' ||
+        !nakuKinds?.includes('chi')}
       on:click={() => {
         sendReply('chi');
       }}>chi</button
     >
     <button
-      disabled={true}
+      disabled={lastEventToReply === undefined ||
+        requestedCommand !== 'naku?' ||
+        !nakuKinds?.includes('kan')}
       on:click={() => {
         sendReply('kan');
-      }}>chi</button
+      }}>kan</button
     >
     <button
-      disabled={true}
-      on:click={() => {
-        sendReply('richi');
-      }}>richi</button
-    >
-    <button
-      disabled={lastEventToReply === undefined}
+      disabled={lastEventToReply === undefined ||
+        requestedCommand !== 'naku?' ||
+        !nakuKinds?.includes('ron')}
       on:click={() => {
         sendReply('ron');
       }}>ron</button
     >
+    <br />
     <button
-      disabled={true}
+      disabled={lastEventToReply === undefined ||
+        requestedCommand !== 'sutehai?'}
       on:click={() => {
-        sendReply('tsumo');
+        setSutehai('kan');
+      }}>kan</button
+    >
+    <button
+      disabled={lastEventToReply === undefined ||
+        requestedCommand !== 'sutehai?' ||
+        sutehaiCommand === 'richi' ||
+        isRichi.get(loginPubkey)}
+      on:click={() => {
+        setSutehai('richi');
+      }}>richi</button
+    >
+    <button
+      disabled={lastEventToReply === undefined ||
+        requestedCommand !== 'sutehai?'}
+      on:click={() => {
+        setSutehai('tsumo');
+        sendDapai('');
       }}>tsumo</button
     >
   {/if}
