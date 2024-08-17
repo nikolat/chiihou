@@ -248,6 +248,8 @@
               sutehai = new Map<string, string>();
               say = new Map<string, string>();
               isRichi = new Map<string, boolean>();
+              pointDiff = new Map<string, string>();
+              dorahyoujihai = '';
               sutehaiCommand = 'sutehai';
               break;
             case 'point':
