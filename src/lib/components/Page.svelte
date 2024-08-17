@@ -328,11 +328,11 @@
 </script>
 
 <svelte:head>
-  <title>rs-nostr-practice</title>
+  <title>rx-nostr-practice</title>
 </svelte:head>
 
 <header>
-  <h1>rs-nostr-practice</h1>
+  <h1>rx-nostr-practice</h1>
   {#if loginPubkey === undefined}
     <button on:click={getNpubWithNIP07}>NIP-07 Login</button>
   {:else}
