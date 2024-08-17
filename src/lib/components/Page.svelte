@@ -13,6 +13,7 @@
     defaultRelays,
     getRoboHashURL,
     linkGitHub,
+    mahjongPlayerPubkeys,
     mahjongRoomId,
     mahjongServerPubkey,
   } from '$lib/config';
@@ -83,13 +84,13 @@
     sutehaiCommand = 'sutehai';
   };
 
-  const sendMention = (message: string) => {
+  const sendMention = (message: string, pubkey: string = mahjongServerPubkey) => {
     rxNostr.send({
       kind: 42,
-      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} ${message}`,
+      content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
       tags: [
         ['e', mahjongRoomId, '', 'root'],
-        ['p', mahjongServerPubkey, ''],
+        ['p', pubkey, ''],
       ],
     });
   };
@@ -406,6 +407,26 @@
       on:click={() => {
         sendMention('gamestart');
       }}>GameStart</button
+    >
+    <button
+      on:click={() => {
+        sendMention('join');
+      }}>Join</button
+    >
+    <button
+      on:click={() => {
+        sendMention('join', mahjongPlayerPubkeys[0]);
+      }}>Join rinrin</button
+    >
+    <button
+      on:click={() => {
+        sendMention('join', mahjongPlayerPubkeys[1]);
+      }}>Join chunchun</button
+    >
+    <button
+      on:click={() => {
+        sendMention('join', mahjongPlayerPubkeys[2]);
+      }}>Join whanwhan</button
     >
     <button
       on:click={() => {
