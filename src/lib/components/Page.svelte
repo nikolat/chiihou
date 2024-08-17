@@ -84,7 +84,10 @@
     sutehaiCommand = 'sutehai';
   };
 
-  const sendMention = (message: string, pubkey: string = mahjongServerPubkey) => {
+  const sendMention = (
+    message: string,
+    pubkey: string = mahjongServerPubkey,
+  ) => {
     rxNostr.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
