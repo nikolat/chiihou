@@ -203,14 +203,7 @@
 
     const replay = async (events: NostrEvent[], sleepInterval?: number) => {
       for (const ev of events) {
-        if (
-          ev.content.includes('GET') &&
-          loginPubkey !== undefined &&
-          ev.tags.some(
-            (tag) =>
-              tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
-          )
-        ) {
+        if (ev.content.includes('GET')) {
           lastEventToReply = ev;
           const m = ev.content.match(
             /GET\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
@@ -369,6 +362,13 @@
       }
     };
   });
+
+  $: isSutehaiTurn =
+    lastEventToReply !== undefined &&
+    lastEventToReply.tags.some(
+      (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+    ) &&
+    nakuKinds === undefined;
 </script>
 
 <svelte:head>
@@ -512,7 +512,7 @@
       </dt>
       <dd>
         {#each paigazouTehai?.at(0) ?? [] as pai}
-          {#if loginPubkey === key && lastEventToReply !== undefined}
+          {#if isSutehaiTurn}
             <button class="dapai" on:click={() => sendDapai(pai)}
               ><img class="pai" alt={pai} src={getEmojiUrl(pai)} /></button
             >
@@ -537,7 +537,7 @@
           )
         {/each}
         {#if tsumohai.get(key)?.length ?? 0 > 0}
-          {#if loginPubkey === key && lastEventToReply !== undefined}
+          {#if isSutehaiTurn}
             <button
               class="dapai"
               on:click={() => sendDapai(tsumohai.get(key) ?? '')}
