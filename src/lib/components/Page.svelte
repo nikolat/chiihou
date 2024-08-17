@@ -372,7 +372,13 @@
     lastEventToReply.tags.some(
       (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
     ) &&
-    nakuKinds === undefined;
+    requestedCommand === 'sutehai?';
+  $: isNakuTurn =
+    lastEventToReply !== undefined &&
+    lastEventToReply.tags.some(
+      (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+    ) &&
+    requestedCommand === 'naku?';
 </script>
 
 <svelte:head>
@@ -443,54 +449,44 @@
     >
     <br />
     <button
-      disabled={lastEventToReply === undefined || requestedCommand !== 'naku?'}
+      disabled={!isNakuTurn}
       on:click={() => {
         sendReply('no');
       }}>no</button
     >
     <button
-      disabled={lastEventToReply === undefined ||
-        requestedCommand !== 'naku?' ||
-        !nakuKinds?.includes('pon')}
+      disabled={!isNakuTurn || !nakuKinds?.includes('pon')}
       on:click={() => {
         sendReply('pon');
       }}>pon</button
     >
     <button
-      disabled={lastEventToReply === undefined ||
-        requestedCommand !== 'naku?' ||
-        !nakuKinds?.includes('chi')}
+      disabled={!isNakuTurn || !nakuKinds?.includes('chi')}
       on:click={() => {
         sendReply('chi');
       }}>chi</button
     >
     <button
-      disabled={lastEventToReply === undefined ||
-        requestedCommand !== 'naku?' ||
-        !nakuKinds?.includes('kan')}
+      disabled={!isNakuTurn || !nakuKinds?.includes('kan')}
       on:click={() => {
         sendReply('kan');
       }}>kan</button
     >
     <button
-      disabled={lastEventToReply === undefined ||
-        requestedCommand !== 'naku?' ||
-        !nakuKinds?.includes('ron')}
+      disabled={!isNakuTurn || !nakuKinds?.includes('ron')}
       on:click={() => {
         sendReply('ron');
       }}>ron</button
     >
     <br />
     <button
-      disabled={lastEventToReply === undefined ||
-        requestedCommand !== 'sutehai?'}
+      disabled={!isSutehaiTurn}
       on:click={() => {
         setSutehai('kan');
       }}>kan</button
     >
     <button
-      disabled={lastEventToReply === undefined ||
-        requestedCommand !== 'sutehai?' ||
+      disabled={!isSutehaiTurn ||
         sutehaiCommand === 'richi' ||
         isRichi.get(loginPubkey) ||
         nokori === 0}
@@ -499,8 +495,7 @@
       }}>richi</button
     >
     <button
-      disabled={lastEventToReply === undefined ||
-        requestedCommand !== 'sutehai?'}
+      disabled={!isSutehaiTurn}
       on:click={() => {
         setSutehai('tsumo');
         sendDapai('');
