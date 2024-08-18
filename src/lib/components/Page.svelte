@@ -38,7 +38,10 @@
   import { Subject } from 'rxjs';
 
   let events: NostrEvent[] = [];
-  let players: Map<string, NostrEvent> = new Map<string, NostrEvent>();
+  let players: Map<string, NostrEvent | undefined> = new Map<
+    string,
+    NostrEvent | undefined
+  >();
   let points: Map<string, number> = new Map<string, number>();
   let pointDiff: Map<string, string> = new Map<string, string>();
   let tehai: Map<string, string> = new Map<string, string>();
@@ -153,6 +156,7 @@
         case 0:
           if (
             !players.has(event.pubkey) ||
+            players.get(event.pubkey) === undefined ||
             players.get(event.pubkey)!.created_at < event.created_at
           ) {
             players.set(event.pubkey, event);
@@ -242,6 +246,9 @@
           const command = m[1];
           //console.log(command);
           switch (command) {
+            case 'gamestart':
+              players = new Map<string, NostrEvent>();
+              break;
             case 'kyokustart':
               bafu = m[2];
               tsumibou = parseInt(m[4]);
@@ -254,6 +261,18 @@
               pointDiff = new Map<string, string>();
               dorahyoujihai = '';
               sutehaiCommand = 'sutehai';
+              const pubkeys = ev.tags
+                .filter((tag) => tag.length >= 2 && tag[0] === 'p')
+                .map((tag) => tag[1]);
+              for (const pubkey of pubkeys) {
+                players.set(pubkey, undefined);
+              }
+              const rxReqB2 = createRxBackwardReq();
+              const subscriptionB2 = rxNostr
+                .use(rxReqB2)
+                .pipe(uniq(flushes$))
+                .subscribe(next);
+              rxReqB2.emit({ kinds: [0], authors: pubkeys, until: now });
               break;
             case 'point':
               const playerName = m[2];
@@ -262,12 +281,6 @@
               const npub = playerName.replace('nostr:', '');
               const pubkey = nip19.decode(npub).data as string;
               if (sign === '=') {
-                const rxReqB2 = createRxBackwardReq();
-                const subscriptionB2 = rxNostr
-                  .use(rxReqB2)
-                  .pipe(uniq(flushes$))
-                  .subscribe(next);
-                rxReqB2.emit({ kinds: [0], authors: [pubkey], until: now });
                 points.set(pubkey, point);
                 points = points;
               } else {
@@ -555,7 +568,7 @@
   <h2>Players</h2>
   <dl class="players">
     {#each players.entries() as [key, value]}
-      {@const profile = JSON.parse(value.content)}
+      {@const profile = JSON.parse(value?.content || '{}')}
       {@const paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '')}
       {@const paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '')}
       <dt
