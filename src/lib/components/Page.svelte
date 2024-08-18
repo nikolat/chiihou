@@ -21,7 +21,6 @@
     canAnkan,
     canKakan,
     canTsumo,
-    getEmojiUrl,
     insertEventIntoDescendingList,
     setFuro,
     sortEvents,
@@ -120,7 +119,7 @@
   const getTagsReply = (event: NostrEvent): string[][] => {
     const tagsReply: string[][] = [];
     const tagRoot = event.tags.find(
-      (tag) => tag.length >= 3 && tag[0] === 'e' && tag[3] === 'root',
+      (tag) => tag.length >= 4 && tag[0] === 'e' && tag[3] === 'root',
     );
     if (tagRoot !== undefined) {
       tagsReply.push(tagRoot);
@@ -476,9 +475,10 @@
           on:click={() => {
             sendReply(`chi ${pai1} ${pai2}`);
           }}>chi</button
-        ><Pai pai={pai1} isDora={doras.includes(pai1)} /><Pai
+        ><Pai pai={pai1} isDora={doras.includes(pai1)} hide={false} /><Pai
           pai={pai2}
           isDora={doras.includes(pai2)}
+          hide={false}
         />
       {/each}
     {:else}
@@ -548,6 +548,7 @@
     {bafu ?? '?'}場 {tsumibou ?? '?'}本場 供託{kyoutaku ?? '?'}点 ドラ表示牌{#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
         pai={p}
         isDora={doras.includes(p)}
+        hide={false}
       />{/each} 残り{nokori ?? 0}枚
   </p>
   <pre>{result ?? ''}</pre>
@@ -577,17 +578,25 @@
           {#each paigazouTehai?.at(0) ?? [] as pai}
             {#if isSutehaiTurn}
               <button class="dapai" on:click={() => sendDapai(pai)}
-                ><Pai {pai} isDora={doras.includes(pai)} /></button
+                ><Pai
+                  {pai}
+                  isDora={doras.includes(pai)}
+                  hide={loginPubkey !== key}
+                /></button
               >
             {:else}
-              <Pai {pai} isDora={doras.includes(pai)} />
+              <Pai
+                {pai}
+                isDora={doras.includes(pai)}
+                hide={loginPubkey !== key}
+              />
             {/if}
           {/each}
           {#each paigazouTehai?.at(1) ?? [] as pai}
             {@const pa = stringToArrayPlain(pai)}
             &lt;
             {#each pa as p}
-              <Pai pai={p} isDora={doras.includes(p)} />
+              <Pai pai={p} isDora={doras.includes(p)} hide={false} />
             {/each}
             &gt;
           {/each}
@@ -595,7 +604,7 @@
             {@const pa = stringToArrayPlain(pai)}
             (
             {#each pa as p}
-              <Pai pai={p} isDora={doras.includes(p)} />
+              <Pai pai={p} isDora={doras.includes(p)} hide={false} />
             {/each}
             )
           {/each}
@@ -607,12 +616,14 @@
                 ><Pai
                   pai={tsumohai.get(key) ?? ''}
                   isDora={doras.includes(tsumohai.get(key) ?? '')}
+                  hide={loginPubkey !== key}
                 /></button
               >
             {:else}
               <Pai
                 pai={tsumohai.get(key) ?? ''}
                 isDora={doras.includes(tsumohai.get(key) ?? '')}
+                hide={loginPubkey !== key}
               />
             {/if}
           {/if}
@@ -620,7 +631,11 @@
         <br />
         <div class="kawa">
           {#each paigazouSutehai as p, i}{#if [6, 12].includes(i)}<br
-              />{/if}<Pai pai={p} isDora={doras.includes(p)} />{/each}
+              />{/if}<Pai
+              pai={p}
+              isDora={doras.includes(p)}
+              hide={false}
+            />{/each}
         </div>
       </dd>
     {/each}

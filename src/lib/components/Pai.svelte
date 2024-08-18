@@ -3,9 +3,14 @@
 
   export let pai: string;
   export let isDora: boolean;
+  export let hide: boolean;
 </script>
 
-<img class={isDora ? 'pai dora' : 'pai'} alt={pai} src={getEmojiUrl(pai)} />
+<img
+  class={isDora ? 'pai dora' : 'pai'}
+  alt={pai}
+  src={getEmojiUrl(hide ? '5z' : pai)}
+/>
 
 <style>
   .pai {
