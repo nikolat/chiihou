@@ -581,14 +581,14 @@
                 ><Pai
                   {pai}
                   isDora={doras.includes(pai)}
-                  hide={loginPubkey !== key}
+                  hide={loginPubkey !== undefined && loginPubkey !== key}
                 /></button
               >
             {:else}
               <Pai
                 {pai}
                 isDora={doras.includes(pai)}
-                hide={loginPubkey !== key}
+                hide={loginPubkey !== undefined && loginPubkey !== key}
               />
             {/if}
           {/each}
@@ -616,14 +616,14 @@
                 ><Pai
                   pai={tsumohai.get(key) ?? ''}
                   isDora={doras.includes(tsumohai.get(key) ?? '')}
-                  hide={loginPubkey !== key}
+                  hide={loginPubkey !== undefined && loginPubkey !== key}
                 /></button
               >
             {:else}
               <Pai
                 pai={tsumohai.get(key) ?? ''}
                 isDora={doras.includes(tsumohai.get(key) ?? '')}
-                hide={loginPubkey !== key}
+                hide={loginPubkey !== undefined && loginPubkey !== key}
               />
             {/if}
           {/if}
