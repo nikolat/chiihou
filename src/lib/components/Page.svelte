@@ -32,7 +32,7 @@
     stringToArrayPlain,
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
-  import { canRichi } from '$lib/mjlib/mj_ai';
+  import { canRichi, getChiMaterial } from '$lib/mjlib/mj_ai';
   import { nip19, type NostrEvent } from 'nostr-tools';
   import { Subject } from 'rxjs';
 
@@ -464,12 +464,23 @@
         sendReply('pon');
       }}>pon</button
     >
-    <button
-      disabled={!isNakuTurn || !nakuKinds?.includes('chi')}
-      on:click={() => {
-        sendReply('chi');
-      }}>chi</button
-    >
+    {#if isNakuTurn && nakuKinds?.includes('chi')}
+      {#each getChiMaterial(tehai.get(loginPubkey) ?? '', sutehaiSaved) as cm}
+        {@const pai1 = cm.slice(0, 2)}
+        {@const pai2 = cm.slice(2, 4)}
+        <button
+          on:click={() => {
+            sendReply(`chi ${pai1} ${pai2}`);
+          }}>chi</button
+        ><img class="pai" alt={pai1} src={getEmojiUrl(pai1)} /><img
+          class="pai"
+          alt={pai2}
+          src={getEmojiUrl(pai2)}
+        />
+      {/each}
+    {:else}
+      <button disabled={true}>chi</button>
+    {/if}
     <button
       disabled={!isNakuTurn || !nakuKinds?.includes('kan')}
       on:click={() => {
