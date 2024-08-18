@@ -18,6 +18,9 @@
     mahjongServerPubkey,
   } from '$lib/config';
   import {
+    canAnkan,
+    canKakan,
+    canTsumo,
     getEmojiUrl,
     insertEventIntoDescendingList,
     setFuro,
@@ -29,6 +32,7 @@
     stringToArrayPlain,
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
+  import { canRichi } from '$lib/mjlib/mj_ai';
   import { nip19, type NostrEvent } from 'nostr-tools';
   import { Subject } from 'rxjs';
 
@@ -480,7 +484,19 @@
     >
     <br />
     <button
-      disabled={!isSutehaiTurn}
+      disabled={!isSutehaiTurn ||
+        !(
+          canAnkan(
+            tehai.get(loginPubkey) ?? '',
+            tsumohai.get(loginPubkey) ?? '',
+            nokori,
+          ) ||
+          canKakan(
+            tehai.get(loginPubkey) ?? '',
+            tsumohai.get(loginPubkey) ?? '',
+            nokori,
+          )
+        )}
       on:click={() => {
         setSutehai('kan');
       }}>kan</button
@@ -488,14 +504,22 @@
     <button
       disabled={!isSutehaiTurn ||
         sutehaiCommand === 'richi' ||
-        isRichi.get(loginPubkey) ||
-        nokori === 0}
+        !canRichi(
+          tehai.get(loginPubkey) ?? '',
+          tsumohai.get(loginPubkey) ?? '',
+          isRichi.get(loginPubkey) ?? false,
+          nokori,
+        )}
       on:click={() => {
         setSutehai('richi');
       }}>richi</button
     >
     <button
-      disabled={!isSutehaiTurn}
+      disabled={!isSutehaiTurn ||
+        !canTsumo(
+          tehai.get(loginPubkey) ?? '',
+          tsumohai.get(loginPubkey) ?? '',
+        )}
       on:click={() => {
         setSutehai('tsumo');
         sendDapai('');

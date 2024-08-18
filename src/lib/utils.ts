@@ -1,6 +1,13 @@
 import type { NostrEvent } from 'nostr-tools/core';
 import { binarySearch } from 'nostr-tools/utils';
-import { compareFn, removeHai, stringToArrayWithFuro } from './mjlib/mj_common';
+import {
+  addHai,
+  compareFn,
+  removeHai,
+  stringToArrayWithFuro,
+} from './mjlib/mj_common';
+import { getShanten } from './mjlib/mj_shanten';
+import { getKakanHai } from './mjlib/mj_ai';
 
 export const sortEvents = (events: NostrEvent[]): NostrEvent[] => {
   return events.sort((a: NostrEvent, b: NostrEvent): number => {
@@ -66,6 +73,48 @@ const addFuro = (
   } else {
     return tehai + s1 + strFuro + s2;
   }
+};
+
+export const canTsumo = (tehai: string, atariHai: string): boolean => {
+  if (atariHai === '') return false;
+  //和了かどうか(シャンテン数が-1かどうか)検証する
+  const shanten = getShanten(addHai(tehai, atariHai))[0];
+  if (shanten !== -1) return false;
+  //TODO: 役があるかどうか検証する
+  return true;
+};
+
+//TODO: もっとちゃんとチェック
+export const canAnkan = (
+  tehai: string,
+  tsumoHai: string,
+  nokori: number,
+): boolean => {
+  if (nokori === 0) return false;
+  const arAnkanHai: string[] = getAnkanHai(addHai(tehai, tsumoHai));
+  if (arAnkanHai.length === 0) return false;
+  return true;
+};
+
+const getAnkanHai = (hai: string): string[] => {
+  const arHai: string[] = stringToArrayWithFuro(hai)[0];
+  const arRet: string[] = [];
+  for (const h of new Set<string>(arHai)) {
+    if (arHai.filter((e) => e === h).length >= 4) arRet.push(h);
+  }
+  return arRet;
+};
+
+//TODO: もっとちゃんとチェック
+export const canKakan = (
+  tehai: string,
+  tsumoHai: string,
+  nokori: number,
+): boolean => {
+  if (nokori === 0) return false;
+  const arKakanHai: string[] = getKakanHai(addHai(tehai, tsumoHai));
+  if (arKakanHai.length > 0) return true;
+  return false;
 };
 
 export const getEmojiUrl = (pai: string): string => {
