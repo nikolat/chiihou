@@ -452,6 +452,7 @@
       }}>Next</button
     >
     <br />
+    naku?
     <button
       disabled={!isNakuTurn}
       on:click={() => {
@@ -494,6 +495,7 @@
       }}>ron</button
     >
     <br />
+    sutehai?
     <button
       disabled={!isSutehaiTurn ||
         !(
@@ -554,69 +556,81 @@
       {@const profile = JSON.parse(value.content)}
       {@const paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '')}
       {@const paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '')}
-      <dt>
-        <img
+      <dt
+        class={lastEventToReply?.tags.some(
+          (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === key,
+        )
+          ? 'player turn'
+          : 'player'}
+      >
+        {profile.display_name ?? ''} @{profile.name ?? ''}
+        {points.get(key)}点 {pointDiff.get(key) ?? ''}
+        <br /><img
           class="player"
           alt=""
           src={profile.picture ?? getRoboHashURL(key)}
-        />
-        {profile.display_name ?? ''} @{profile.name ?? ''}
-        {points.get(key)}点 {pointDiff.get(key) ?? ''}
-        {say.get(key) ? `＜ [${say.get(key)}]` : ''}
+        />{say.get(key) ? `＜ [${say.get(key)}]` : ''}
       </dt>
       <dd>
-        {#each paigazouTehai?.at(0) ?? [] as pai}
-          {#if isSutehaiTurn}
-            <button class="dapai" on:click={() => sendDapai(pai)}
-              ><img class="pai" alt={pai} src={getEmojiUrl(pai)} /></button
-            >
-          {:else}
-            <img class="pai" alt={pai} src={getEmojiUrl(pai)} />
-          {/if}
-        {/each}
-        {#each paigazouTehai?.at(1) ?? [] as pai}
-          {@const pa = stringToArrayPlain(pai)}
-          &lt;
-          {#each pa as p}
-            <img class="pai" alt={pai} src={getEmojiUrl(p)} />
+        <div class="tehai">
+          {#each paigazouTehai?.at(0) ?? [] as pai}
+            {#if isSutehaiTurn}
+              <button class="dapai" on:click={() => sendDapai(pai)}
+                ><img class="pai" alt={pai} src={getEmojiUrl(pai)} /></button
+              >
+            {:else}
+              <img class="pai" alt={pai} src={getEmojiUrl(pai)} />
+            {/if}
           {/each}
-          &gt;
-        {/each}
-        {#each paigazouTehai?.at(2) ?? [] as pai}
-          {@const pa = stringToArrayPlain(pai)}
-          (
-          {#each pa as p}
-            <img class="pai" alt={pai} src={getEmojiUrl(p)} />
+          {#each paigazouTehai?.at(1) ?? [] as pai}
+            {@const pa = stringToArrayPlain(pai)}
+            &lt;
+            {#each pa as p}
+              <img class="pai" alt={pai} src={getEmojiUrl(p)} />
+            {/each}
+            &gt;
           {/each}
-          )
-        {/each}
-        {#if tsumohai.get(key)?.length ?? 0 > 0}
-          {#if isSutehaiTurn}
-            <button
-              class="dapai"
-              on:click={() => sendDapai(tsumohai.get(key) ?? '')}
-              ><img
+          {#each paigazouTehai?.at(2) ?? [] as pai}
+            {@const pa = stringToArrayPlain(pai)}
+            (
+            {#each pa as p}
+              <img class="pai" alt={pai} src={getEmojiUrl(p)} />
+            {/each}
+            )
+          {/each}
+          {#if tsumohai.get(key)?.length ?? 0 > 0}
+            {#if isSutehaiTurn}
+              <button
+                class="dapai"
+                on:click={() => sendDapai(tsumohai.get(key) ?? '')}
+                ><img
+                  class="pai"
+                  alt={tsumohai.get(key)}
+                  src={getEmojiUrl(tsumohai.get(key) ?? '')}
+                /></button
+              >
+            {:else}
+              <img
                 class="pai"
                 alt={tsumohai.get(key)}
                 src={getEmojiUrl(tsumohai.get(key) ?? '')}
-              /></button
-            >
-          {:else}
-            <img
-              class="pai"
-              alt={tsumohai.get(key)}
-              src={getEmojiUrl(tsumohai.get(key) ?? '')}
-            />
+              />
+            {/if}
           {/if}
-        {/if}
+        </div>
         <br />
-        {#each paigazouSutehai as paigazou}
-          <img class="pai" alt={paigazou} src={getEmojiUrl(paigazou)} />
-        {/each}
+        <div class="kawa">
+          {#each paigazouSutehai as paigazou, i}{#if [6, 12].includes(i)}<br
+              />{/if}<img
+              class="pai"
+              alt={paigazou}
+              src={getEmojiUrl(paigazou)}
+            />{/each}
+        </div>
       </dd>
     {/each}
   </dl>
-  <h2>Log</h2>
+  <h2 id="log">Log</h2>
   <dl class="log">
     {#each events as event}
       <dt><time>{new Date(1000 * event.created_at).toLocaleString()}</time></dt>
@@ -635,14 +649,34 @@
 </footer>
 
 <style>
+  .players dt {
+    float: left;
+    clear: both;
+    height: 100px;
+    width: 15em;
+  }
+  .players dt.turn {
+    box-shadow: 1px 1px 5px 1px purple;
+  }
   .players dd {
-    height: 80px;
+    margin-inline-start: 16em;
+    height: 130px;
+  }
+  .players dd .tehai {
+    display: inline-block;
+  }
+  .players dd .kawa {
+    display: inline-block;
+    line-height: 66%;
   }
   .player {
     height: 64px;
   }
   .pai {
     height: 30px;
+  }
+  #log {
+    clear: both;
   }
   .log {
     border: 1px gray solid;
