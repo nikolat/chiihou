@@ -49,6 +49,10 @@
   let sutehai: Map<string, string> = new Map<string, string>();
   let say: Map<string, string> = new Map<string, string>();
   let isRichi: Map<string, boolean> = new Map<string, boolean>();
+  let nakuKinds: Map<string, string[] | undefined> = new Map<
+    string,
+    string[] | undefined
+  >();
   let bafu: string;
   let tsumibou: number;
   let kyoutaku: number;
@@ -59,9 +63,8 @@
   let nokori: number;
 
   let loginPubkey: string | undefined;
-  let lastEventToReply: NostrEvent | undefined;
+  let lastEventsToReply: NostrEvent[] | undefined;
   let requestedCommand: string | undefined;
-  let nakuKinds: string[] | undefined;
 
   let rxNostr: RxNostr;
 
@@ -83,11 +86,18 @@
   };
 
   const sendDapai = (pai: string) => {
-    if (lastEventToReply === undefined) return;
+    if (lastEventsToReply === undefined) return;
     rxNostr.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
-      tags: getTagsReply(lastEventToReply),
+      tags: getTagsReply(
+        lastEventsToReply.find((ev) =>
+          ev.tags.some(
+            (tag) =>
+              tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+          ),
+        )!,
+      ),
     });
     sutehaiCommand = 'sutehai';
   };
@@ -107,11 +117,18 @@
   };
 
   const sendReply = (message: string) => {
-    if (lastEventToReply === undefined) return;
+    if (lastEventsToReply === undefined) return;
     rxNostr.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} naku? ${message}`,
-      tags: getTagsReply(lastEventToReply),
+      tags: getTagsReply(
+        lastEventsToReply.find((ev) =>
+          ev.tags.some(
+            (tag) =>
+              tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+          ),
+        )!,
+      ),
     });
   };
 
@@ -217,7 +234,10 @@
     const replay = async (events: NostrEvent[], sleepInterval?: number) => {
       for (const ev of events) {
         if (ev.content.includes('GET')) {
-          lastEventToReply = ev;
+          if (lastEventsToReply === undefined) {
+            lastEventsToReply = [];
+          }
+          lastEventsToReply.push(ev);
           const m = ev.content.match(
             /GET\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
           );
@@ -226,19 +246,26 @@
           requestedCommand = command;
           if (command === 'naku?') {
             let i = 2;
-            nakuKinds = [];
+            const ks = [];
             while (m[i] !== undefined) {
-              nakuKinds.push(m[i]);
+              ks.push(m[i]);
               i++;
             }
+            const p = ev.tags
+              .find((tag) => tag.length >= 2 && tag[0] === 'p')!
+              .at(1)!;
+            nakuKinds.set(p, ks);
           }
           continue;
         }
         if (ev.content.includes('NOTIFY')) {
           if (sleepInterval !== undefined) await sleep(sleepInterval);
-          lastEventToReply = undefined;
+          lastEventsToReply = undefined;
           requestedCommand = undefined;
-          nakuKinds = undefined;
+          const p = ev.tags
+            .find((tag) => tag.length >= 2 && tag[0] === 'p')!
+            .at(1)!;
+          nakuKinds.set(p, undefined);
           const m = ev.content.match(
             /NOTIFY\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
           );
@@ -259,6 +286,7 @@
               say = new Map<string, string>();
               isRichi = new Map<string, boolean>();
               pointDiff = new Map<string, string>();
+              nakuKinds = new Map<string, string[] | undefined>();
               dorahyoujihai = '';
               sutehaiCommand = 'sutehai';
               const pubkeys = ev.tags
@@ -386,15 +414,19 @@
   });
 
   $: isSutehaiTurn =
-    lastEventToReply !== undefined &&
-    lastEventToReply.tags.some(
-      (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+    lastEventsToReply !== undefined &&
+    lastEventsToReply.some((ev) =>
+      ev.tags.some(
+        (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+      ),
     ) &&
     requestedCommand === 'sutehai?';
   $: isNakuTurn =
-    lastEventToReply !== undefined &&
-    lastEventToReply.tags.some(
-      (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+    lastEventsToReply !== undefined &&
+    lastEventsToReply.some((ev) =>
+      ev.tags.some(
+        (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
+      ),
     ) &&
     requestedCommand === 'naku?';
   $: doras = stringToArrayPlain(getDoraFromDorahyouji(dorahyoujihai ?? ''));
@@ -475,12 +507,12 @@
       }}>no</button
     >
     <button
-      disabled={!isNakuTurn || !nakuKinds?.includes('pon')}
+      disabled={!isNakuTurn || !nakuKinds.get(loginPubkey)?.includes('pon')}
       on:click={() => {
         sendReply('pon');
       }}>pon</button
     >
-    {#if isNakuTurn && nakuKinds?.includes('chi')}
+    {#if isNakuTurn && nakuKinds.get(loginPubkey)?.includes('chi')}
       {#each getChiMaterial(tehai.get(loginPubkey) ?? '', sutehaiSaved) as cm}
         {@const pai1 = cm.slice(0, 2)}
         {@const pai2 = cm.slice(2, 4)}
@@ -498,13 +530,13 @@
       <button disabled={true}>chi</button>
     {/if}
     <button
-      disabled={!isNakuTurn || !nakuKinds?.includes('kan')}
+      disabled={!isNakuTurn || !nakuKinds.get(loginPubkey)?.includes('kan')}
       on:click={() => {
         sendReply('kan');
       }}>kan</button
     >
     <button
-      disabled={!isNakuTurn || !nakuKinds?.includes('ron')}
+      disabled={!isNakuTurn || !nakuKinds.get(loginPubkey)?.includes('ron')}
       on:click={() => {
         sendReply('ron');
       }}>ron</button
@@ -572,8 +604,10 @@
       {@const paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '')}
       {@const paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '')}
       <dt
-        class={lastEventToReply?.tags.some(
-          (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === key,
+        class={lastEventsToReply?.some((ev) =>
+          ev.tags.some(
+            (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === key,
+          ),
         )
           ? 'player turn'
           : 'player'}
