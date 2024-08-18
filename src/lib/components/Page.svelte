@@ -28,10 +28,12 @@
   } from '$lib/utils';
   import {
     addHai,
+    getDoraFromDorahyouji,
     removeHai,
     stringToArrayPlain,
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
+  import Pai from '$lib/components/Pai.svelte';
   import { canRichi, getChiMaterial } from '$lib/mjlib/mj_ai';
   import { nip19, type NostrEvent } from 'nostr-tools';
   import { Subject } from 'rxjs';
@@ -383,6 +385,7 @@
       (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
     ) &&
     requestedCommand === 'naku?';
+  $: doras = stringToArrayPlain(getDoraFromDorahyouji(dorahyoujihai ?? ''));
 </script>
 
 <svelte:head>
@@ -473,10 +476,9 @@
           on:click={() => {
             sendReply(`chi ${pai1} ${pai2}`);
           }}>chi</button
-        ><img class="pai" alt={pai1} src={getEmojiUrl(pai1)} /><img
-          class="pai"
-          alt={pai2}
-          src={getEmojiUrl(pai2)}
+        ><Pai pai={pai1} isDora={doras.includes(pai1)} /><Pai
+          pai={pai2}
+          isDora={doras.includes(pai2)}
         />
       {/each}
     {:else}
@@ -543,10 +545,9 @@
 <main>
   <h2>Info</h2>
   <p>
-    {bafu ?? '?'}場 {tsumibou ?? '?'}本場 供託{kyoutaku ?? '?'}点 ドラ表示牌{#each stringToArrayPlain(dorahyoujihai ?? '') as p}<img
-        class="pai"
-        alt={p}
-        src={getEmojiUrl(p)}
+    {bafu ?? '?'}場 {tsumibou ?? '?'}本場 供託{kyoutaku ?? '?'}点 ドラ表示牌{#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
+        pai={p}
+        isDora={doras.includes(p)}
       />{/each} 残り{nokori ?? 0}枚
   </p>
   <pre>{result ?? ''}</pre>
@@ -576,17 +577,17 @@
           {#each paigazouTehai?.at(0) ?? [] as pai}
             {#if isSutehaiTurn}
               <button class="dapai" on:click={() => sendDapai(pai)}
-                ><img class="pai" alt={pai} src={getEmojiUrl(pai)} /></button
+                ><Pai {pai} isDora={doras.includes(pai)} /></button
               >
             {:else}
-              <img class="pai" alt={pai} src={getEmojiUrl(pai)} />
+              <Pai {pai} isDora={doras.includes(pai)} />
             {/if}
           {/each}
           {#each paigazouTehai?.at(1) ?? [] as pai}
             {@const pa = stringToArrayPlain(pai)}
             &lt;
             {#each pa as p}
-              <img class="pai" alt={pai} src={getEmojiUrl(p)} />
+              <Pai pai={p} isDora={doras.includes(p)} />
             {/each}
             &gt;
           {/each}
@@ -594,7 +595,7 @@
             {@const pa = stringToArrayPlain(pai)}
             (
             {#each pa as p}
-              <img class="pai" alt={pai} src={getEmojiUrl(p)} />
+              <Pai pai={p} isDora={doras.includes(p)} />
             {/each}
             )
           {/each}
@@ -603,29 +604,23 @@
               <button
                 class="dapai"
                 on:click={() => sendDapai(tsumohai.get(key) ?? '')}
-                ><img
-                  class="pai"
-                  alt={tsumohai.get(key)}
-                  src={getEmojiUrl(tsumohai.get(key) ?? '')}
+                ><Pai
+                  pai={tsumohai.get(key) ?? ''}
+                  isDora={doras.includes(tsumohai.get(key) ?? '')}
                 /></button
               >
             {:else}
-              <img
-                class="pai"
-                alt={tsumohai.get(key)}
-                src={getEmojiUrl(tsumohai.get(key) ?? '')}
+              <Pai
+                pai={tsumohai.get(key) ?? ''}
+                isDora={doras.includes(tsumohai.get(key) ?? '')}
               />
             {/if}
           {/if}
         </div>
         <br />
         <div class="kawa">
-          {#each paigazouSutehai as paigazou, i}{#if [6, 12].includes(i)}<br
-              />{/if}<img
-              class="pai"
-              alt={paigazou}
-              src={getEmojiUrl(paigazou)}
-            />{/each}
+          {#each paigazouSutehai as p, i}{#if [6, 12].includes(i)}<br
+              />{/if}<Pai pai={p} isDora={doras.includes(p)} />{/each}
         </div>
       </dd>
     {/each}
@@ -650,16 +645,13 @@
 
 <style>
   .players dt {
-    float: left;
-    clear: both;
-    height: 100px;
+    height: 130px;
     width: 15em;
   }
   .players dt.turn {
     box-shadow: 1px 1px 5px 1px purple;
   }
   .players dd {
-    margin-inline-start: 16em;
     height: 130px;
   }
   .players dd .tehai {
@@ -671,12 +663,6 @@
   }
   .player {
     height: 64px;
-  }
-  .pai {
-    height: 30px;
-  }
-  #log {
-    clear: both;
   }
   .log {
     border: 1px gray solid;
@@ -690,5 +676,17 @@
     padding: 0;
     height: 30px;
     cursor: pointer;
+  }
+  @media all and (min-width: 480px) {
+    .players dt {
+      float: left;
+      clear: both;
+    }
+    #log {
+      clear: both;
+    }
+    .players dd {
+      margin-inline-start: 16em;
+    }
   }
 </style>
