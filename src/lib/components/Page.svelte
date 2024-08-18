@@ -22,7 +22,9 @@
     canKakan,
     canTsumo,
     insertEventIntoDescendingList,
+    setAnkan,
     setFuro,
+    setKakan,
     sortEvents,
   } from '$lib/utils';
   import {
@@ -157,7 +159,7 @@
   };
 
   onMount(() => {
-    rxNostr = createRxNostr({ verifier });
+    rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
 
     const rxReqB = createRxBackwardReq();
@@ -289,6 +291,7 @@
               nakuKinds = new Map<string, string[] | undefined>();
               dorahyoujihai = '';
               sutehaiCommand = 'sutehai';
+              result = '';
               const pubkeys = ev.tags
                 .filter((tag) => tag.length >= 2 && tag[0] === 'p')
                 .map((tag) => tag[1]);
@@ -377,12 +380,22 @@
               const npubO = playerNameO.replace('nostr:', '');
               const pubkeyO = nip19.decode(npubO).data as string;
               let t = tehai.get(pubkeyO)!;
-              if (paiOpen.length >= 6) {
-                const opened = paiOpen.replace(sutehaiSaved, '');
-                const newTehai = setFuro(t, sutehaiSaved, opened);
+              if (paiOpen.length == 2) {
+                //加槓
+                const newTehai = setKakan(t, paiOpen);
                 tehai.set(pubkeyO, newTehai);
               } else {
-                //TODO
+                if (sutehaiSaved === '') {
+                  //暗槓
+                  const pai = paiOpen.slice(0, 2);
+                  const newTehai = setAnkan(t, pai);
+                  tehai.set(pubkeyO, newTehai);
+                } else {
+                  //チー、ポン、大明槓
+                  const opened = paiOpen.replace(sutehaiSaved, '');
+                  const newTehai = setFuro(t, sutehaiSaved, opened);
+                  tehai.set(pubkeyO, newTehai);
+                }
               }
               tehai = tehai;
               break;
@@ -545,6 +558,7 @@
     sutehai?
     <button
       disabled={!isSutehaiTurn ||
+        ['ankan', 'kakan'].includes(sutehaiCommand) ||
         !(
           canAnkan(
             tehai.get(loginPubkey) ?? '',
@@ -558,7 +572,24 @@
           )
         )}
       on:click={() => {
-        setSutehai('kan');
+        if (loginPubkey === undefined) return;
+        if (
+          canAnkan(
+            tehai.get(loginPubkey) ?? '',
+            tsumohai.get(loginPubkey) ?? '',
+            nokori,
+          )
+        ) {
+          setSutehai('ankan');
+        } else if (
+          canKakan(
+            tehai.get(loginPubkey) ?? '',
+            tsumohai.get(loginPubkey) ?? '',
+            nokori,
+          )
+        ) {
+          setSutehai('kakan');
+        }
       }}>kan</button
     >
     <button
@@ -628,14 +659,18 @@
                 ><Pai
                   {pai}
                   isDora={doras.includes(pai)}
-                  hide={loginPubkey !== undefined && loginPubkey !== key}
+                  hide={loginPubkey !== undefined &&
+                    loginPubkey !== key &&
+                    result === ''}
                 /></button
               >
             {:else}
               <Pai
                 {pai}
                 isDora={doras.includes(pai)}
-                hide={loginPubkey !== undefined && loginPubkey !== key}
+                hide={loginPubkey !== undefined &&
+                  loginPubkey !== key &&
+                  result === ''}
               />
             {/if}
           {/each}
@@ -663,14 +698,18 @@
                 ><Pai
                   pai={tsumohai.get(key) ?? ''}
                   isDora={doras.includes(tsumohai.get(key) ?? '')}
-                  hide={loginPubkey !== undefined && loginPubkey !== key}
+                  hide={loginPubkey !== undefined &&
+                    loginPubkey !== key &&
+                    result === ''}
                 /></button
               >
             {:else}
               <Pai
                 pai={tsumohai.get(key) ?? ''}
                 isDora={doras.includes(tsumohai.get(key) ?? '')}
-                hide={loginPubkey !== undefined && loginPubkey !== key}
+                hide={loginPubkey !== undefined &&
+                  loginPubkey !== key &&
+                  result === ''}
               />
             {/if}
           {/if}

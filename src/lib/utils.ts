@@ -58,6 +58,18 @@ export const setFuro = (
   return tehai;
 };
 
+export const setKakan = (tehai: string, kakanHai: string): string => {
+  tehai = removeHai(tehai, kakanHai);
+  tehai = tehai.replace(kakanHai.repeat(3), kakanHai.repeat(4));
+  return tehai;
+};
+
+export const setAnkan = (tehai: string, ankanHai: string): string => {
+  tehai = removeHai(tehai, ankanHai.repeat(4));
+  tehai = addFuro(tehai, ankanHai.repeat(4), '(', ')');
+  return tehai;
+};
+
 const addFuro = (
   tehai: string,
   furo: string,
