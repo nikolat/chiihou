@@ -293,7 +293,11 @@
               tehai = tehai;
               break;
             case 'dora':
-              if (result === '') {
+              if (
+                Array.from(say.values()).some((s) =>
+                  ['tsumo', 'ron'].includes(s),
+                )
+              ) {
                 dorahyoujihai = (dorahyoujihai ?? '') + m[2];
               } else {
                 uradorahyoujihai = (uradorahyoujihai ?? '') + m[2];
