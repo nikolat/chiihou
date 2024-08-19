@@ -630,7 +630,7 @@
   <pre>{result ?? ''}</pre>
   <h2>Players</h2>
   <dl class="players">
-    {#each players.entries() as [key, value]}
+    {#each Array.from(players.entries()) as [key, value]}
       {@const profile = JSON.parse(value?.content || '{}')}
       {@const paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '')}
       {@const paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '')}
