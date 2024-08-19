@@ -118,6 +118,16 @@
     });
   };
 
+  const gamestartByForce = async () => {
+    sendMention('reset');
+    await sleep(100);
+    sendMention('gamestart');
+    for (let i = 0; i <= 2; i++) {
+      await sleep(100);
+      sendMention('join', mahjongPlayerPubkeys[i]);
+    }
+  };
+
   const setSutehai = (value: string) => {
     sutehaiCommand = value;
   };
@@ -487,6 +497,23 @@
       }}>Next</button
     >
     <br />
+    <button on:click={gamestartByForce}
+      >GameStart With <img
+        class="player"
+        src="https://nikolat.github.io/avatar/rinrin.png"
+        alt="rinrin"
+      />
+      <img
+        class="player"
+        src="https://nikolat.github.io/avatar/chunchun.png"
+        alt="chunchun"
+      />
+      <img
+        class="player"
+        src="https://nikolat.github.io/avatar/whanwhan.png"
+        alt="whanwhan"
+      />
+    </button>
   {/if}
 </header>
 <main>
@@ -665,6 +692,9 @@
 </footer>
 
 <style>
+  .player {
+    height: 64px;
+  }
   .pai {
     height: 30px;
   }
@@ -676,7 +706,6 @@
     box-shadow: 1px 1px 5px 1px purple;
   }
   .players dt img.player {
-    height: 64px;
     float: left;
   }
   .players dt div.command {
