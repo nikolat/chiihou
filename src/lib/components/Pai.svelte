@@ -9,7 +9,7 @@
 <img
   class={isDora ? 'pai dora' : 'pai'}
   alt={pai}
-  src={getEmojiUrl(hide ? '5z' : pai)}
+  src={getEmojiUrl(hide ? 'back' : pai)}
 />
 
 <style>
