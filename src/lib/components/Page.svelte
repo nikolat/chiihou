@@ -19,9 +19,7 @@
   } from '$lib/config';
   import {
     awayuki_mahjong_emojis,
-    canAnkan,
-    canKakan,
-    canTsumo,
+    getTagsReply,
     insertEventIntoDescendingList,
     setAnkan,
     setFuro,
@@ -36,7 +34,7 @@
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
   import Pai from '$lib/components/Pai.svelte';
-  import { canRichi, getChiMaterial } from '$lib/mjlib/mj_ai';
+  import Command from '$lib/components/Command.svelte';
   import { nip19, type NostrEvent } from 'nostr-tools';
   import { Subject } from 'rxjs';
 
@@ -120,44 +118,8 @@
     });
   };
 
-  const sendReply = (message: string) => {
-    if (lastEventsToReply === undefined) return;
-    rxNostr.send({
-      kind: 42,
-      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} naku? ${message}`,
-      tags: getTagsReply(
-        lastEventsToReply.find((ev) =>
-          ev.tags.some(
-            (tag) =>
-              tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
-          ),
-        )!,
-      ),
-    });
-  };
-
   const setSutehai = (value: string) => {
     sutehaiCommand = value;
-  };
-
-  const getTagsReply = (event: NostrEvent): string[][] => {
-    const tagsReply: string[][] = [];
-    const tagRoot = event.tags.find(
-      (tag) => tag.length >= 4 && tag[0] === 'e' && tag[3] === 'root',
-    );
-    if (tagRoot !== undefined) {
-      tagsReply.push(tagRoot);
-      tagsReply.push(['e', event.id, '', 'reply']);
-    } else {
-      tagsReply.push(['e', event.id, '', 'root']);
-    }
-    for (const tag of event.tags.filter(
-      (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] !== event.pubkey,
-    )) {
-      tagsReply.push(tag);
-    }
-    tagsReply.push(['p', event.pubkey, '']);
-    return tagsReply;
   };
 
   onMount(() => {
@@ -521,110 +483,6 @@
       }}>Next</button
     >
     <br />
-    naku?
-    <button
-      disabled={!isNakuTurn}
-      on:click={() => {
-        sendReply('no');
-      }}>no</button
-    >
-    <button
-      disabled={!isNakuTurn || !nakuKinds.get(loginPubkey)?.includes('pon')}
-      on:click={() => {
-        sendReply('pon');
-      }}>pon</button
-    >
-    {#if isNakuTurn && nakuKinds.get(loginPubkey)?.includes('chi')}
-      {#each getChiMaterial(tehai.get(loginPubkey) ?? '', sutehaiSaved) as cm}
-        {@const pai1 = cm.slice(0, 2)}
-        {@const pai2 = cm.slice(2, 4)}
-        <button
-          on:click={() => {
-            sendReply(`chi ${pai1} ${pai2}`);
-          }}>chi</button
-        ><Pai pai={pai1} isDora={doras.includes(pai1)} hide={false} /><Pai
-          pai={pai2}
-          isDora={doras.includes(pai2)}
-          hide={false}
-        />
-      {/each}
-    {:else}
-      <button disabled={true}>chi</button>
-    {/if}
-    <button
-      disabled={!isNakuTurn || !nakuKinds.get(loginPubkey)?.includes('kan')}
-      on:click={() => {
-        sendReply('kan');
-      }}>kan</button
-    >
-    <button
-      disabled={!isNakuTurn || !nakuKinds.get(loginPubkey)?.includes('ron')}
-      on:click={() => {
-        sendReply('ron');
-      }}>ron</button
-    >
-    <br />
-    sutehai?
-    <button
-      disabled={!isSutehaiTurn ||
-        ['ankan', 'kakan'].includes(sutehaiCommand) ||
-        !(
-          canAnkan(
-            tehai.get(loginPubkey) ?? '',
-            tsumohai.get(loginPubkey) ?? '',
-            nokori,
-          ) ||
-          canKakan(
-            tehai.get(loginPubkey) ?? '',
-            tsumohai.get(loginPubkey) ?? '',
-            nokori,
-          )
-        )}
-      on:click={() => {
-        if (loginPubkey === undefined) return;
-        if (
-          canAnkan(
-            tehai.get(loginPubkey) ?? '',
-            tsumohai.get(loginPubkey) ?? '',
-            nokori,
-          )
-        ) {
-          setSutehai('ankan');
-        } else if (
-          canKakan(
-            tehai.get(loginPubkey) ?? '',
-            tsumohai.get(loginPubkey) ?? '',
-            nokori,
-          )
-        ) {
-          setSutehai('kakan');
-        }
-      }}>kan</button
-    >
-    <button
-      disabled={!isSutehaiTurn ||
-        sutehaiCommand === 'richi' ||
-        !canRichi(
-          tehai.get(loginPubkey) ?? '',
-          tsumohai.get(loginPubkey) ?? '',
-          isRichi.get(loginPubkey) ?? false,
-          nokori,
-        )}
-      on:click={() => {
-        setSutehai('richi');
-      }}>richi</button
-    >
-    <button
-      disabled={!isSutehaiTurn ||
-        !canTsumo(
-          tehai.get(loginPubkey) ?? '',
-          tsumohai.get(loginPubkey) ?? '',
-        )}
-      on:click={() => {
-        setSutehai('tsumo');
-        sendDapai('');
-      }}>tsumo</button
-    >
   {/if}
 </header>
 <main>
@@ -686,7 +544,28 @@
           class="player"
           alt=""
           src={profile.picture ?? getRoboHashURL(key)}
-        />{say.get(key) ? `＜ [${say.get(key)}]` : ''}
+        />
+        <div class="command">
+          {#if loginPubkey !== undefined && loginPubkey === key}<Command
+              {isNakuTurn}
+              {lastEventsToReply}
+              {rxNostr}
+              {loginPubkey}
+              {nakuKinds}
+              {tehai}
+              {sutehaiSaved}
+              {doras}
+              {isSutehaiTurn}
+              {sutehaiCommand}
+              {tsumohai}
+              {nokori}
+              {setSutehai}
+              {isRichi}
+              {sendDapai}
+            />{/if}
+          <br />
+          {say.get(key) ? `＜ [${say.get(key)}]` : ''}
+        </div>
       </dt>
       <dd>
         <div class="tehai">
@@ -792,6 +671,13 @@
   .players dt.turn {
     box-shadow: 1px 1px 5px 1px purple;
   }
+  .players dt img.player {
+    height: 64px;
+    float: left;
+  }
+  .players dt div.command {
+    margin-left: 64px;
+  }
   .players dd {
     height: 130px;
   }
@@ -801,9 +687,6 @@
   .players dd .kawa {
     display: inline-block;
     line-height: 66%;
-  }
-  .player {
-    height: 64px;
   }
   .log {
     border: 1px gray solid;
