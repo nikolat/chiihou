@@ -18,6 +18,7 @@
     mahjongServerPubkey,
   } from '$lib/config';
   import {
+    awayuki_mahjong_emojis,
     canAnkan,
     canKakan,
     canTsumo,
@@ -59,6 +60,7 @@
   let tsumibou: number;
   let kyoutaku: number;
   let dorahyoujihai: string;
+  let uradorahyoujihai: string;
   let result: string;
   let sutehaiSaved: string;
   let sutehaiCommand: string;
@@ -290,6 +292,7 @@
               pointDiff = new Map<string, string>();
               nakuKinds = new Map<string, string[] | undefined>();
               dorahyoujihai = '';
+              uradorahyoujihai = '';
               sutehaiCommand = 'sutehai';
               result = '';
               const pubkeys = ev.tags
@@ -328,7 +331,11 @@
               tehai = tehai;
               break;
             case 'dora':
-              dorahyoujihai = (dorahyoujihai ?? '') + m[2];
+              if (result === '') {
+                dorahyoujihai = (dorahyoujihai ?? '') + m[2];
+              } else {
+                uradorahyoujihai = (uradorahyoujihai ?? '') + m[2];
+              }
               break;
             case 'tsumo':
               const playerNameT = m[2];
@@ -442,7 +449,9 @@
       ),
     ) &&
     requestedCommand === 'naku?';
-  $: doras = stringToArrayPlain(getDoraFromDorahyouji(dorahyoujihai ?? ''));
+  $: doras = stringToArrayPlain(
+    getDoraFromDorahyouji(`${dorahyoujihai ?? ''}${uradorahyoujihai ?? ''}`),
+  );
 </script>
 
 <svelte:head>
@@ -621,11 +630,39 @@
 <main>
   <h2>Info</h2>
   <p>
-    {bafu ?? '?'}場 {tsumibou ?? '?'}本場 供託{kyoutaku ?? '?'}点 ドラ表示牌{#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
+    {bafu ?? '?'}場
+    <img
+      src={awayuki_mahjong_emojis.mahjong_stick100}
+      alt="積み棒"
+      class="pai"
+    />x{tsumibou ?? '0'}
+    <img
+      src={awayuki_mahjong_emojis.mahjong_stick1000}
+      alt="供託"
+      class="pai"
+    />x{kyoutaku === undefined ? '0' : kyoutaku / 1000} 残り{nokori ?? 0}枚
+    <br />
+    {#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
         pai={p}
         isDora={doras.includes(p)}
         hide={false}
-      />{/each} 残り{nokori ?? 0}枚
+      />{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
+        pai={p}
+        isDora={false}
+        hide={true}
+      />{/each}
+    {#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
+      <br />
+      {#each stringToArrayPlain(uradorahyoujihai) as p}<Pai
+          pai={p}
+          isDora={doras.includes(p)}
+          hide={false}
+        />{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
+          pai={p}
+          isDora={false}
+          hide={true}
+        />{/each}
+    {/if}
   </p>
   <pre>{result ?? ''}</pre>
   <h2>Players</h2>
@@ -745,6 +782,9 @@
 </footer>
 
 <style>
+  .pai {
+    height: 30px;
+  }
   .players dt {
     height: 130px;
     width: 15em;

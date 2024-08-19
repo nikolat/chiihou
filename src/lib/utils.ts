@@ -134,8 +134,7 @@ export const getEmojiUrl = (pai: string): string => {
 };
 
 const convertEmoji = (pai: string) => {
-  if (pai === 'back')
-	return 'mahjong_back';
+  if (pai === 'back') return 'mahjong_back';
   if (['m', 'p', 's'].includes(pai.at(1) ?? '')) {
     return `mahjong_${pai.at(1)}${pai.at(0)}`;
   } else if (pai.at(1) === 'z') {
@@ -162,7 +161,7 @@ const convertEmoji = (pai: string) => {
   }
 };
 
-const awayuki_mahjong_emojis: any = {
+export const awayuki_mahjong_emojis: any = {
   mahjong_m1: 'https://awayuki.github.io/emoji/mahjong-m1.png',
   mahjong_m2: 'https://awayuki.github.io/emoji/mahjong-m2.png',
   mahjong_m3: 'https://awayuki.github.io/emoji/mahjong-m3.png',
@@ -198,4 +197,6 @@ const awayuki_mahjong_emojis: any = {
   mahjong_green: 'https://awayuki.github.io/emoji/mahjong-green.png',
   mahjong_red: 'https://awayuki.github.io/emoji/mahjong-red.png',
   mahjong_back: 'https://awayuki.github.io/emoji/mahjong-back.png',
+  mahjong_stick100: 'https://awayuki.github.io/emoji/mahjong-stick100.png',
+  mahjong_stick1000: 'https://awayuki.github.io/emoji/mahjong-stick1000.png',
 };
