@@ -41,7 +41,7 @@
 
 {#if isNakuTurn}
   naku?
-  <button
+  <br /><button
     on:click={() => {
       sendReply('no');
     }}>no</button
