@@ -128,7 +128,7 @@ export const canAnkan = (
   return true;
 };
 
-const getAnkanHai = (hai: string): string[] => {
+export const getAnkanHai = (hai: string): string[] => {
   const arHai: string[] = stringToArrayWithFuro(hai)[0];
   const arRet: string[] = [];
   for (const h of new Set<string>(arHai)) {

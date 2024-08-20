@@ -1,10 +1,17 @@
 <script lang="ts">
   import { mahjongServerPubkey } from '$lib/config';
-  import { canRichi, getChiMaterial } from '$lib/mjlib/mj_ai';
-  import { canAnkan, canKakan, canTsumo, getTagsReply } from '$lib/utils';
+  import { canRichi, getChiMaterial, getKakanHai } from '$lib/mjlib/mj_ai';
+  import {
+    canAnkan,
+    canKakan,
+    canTsumo,
+    getAnkanHai,
+    getTagsReply,
+  } from '$lib/utils';
   import { nip19, type NostrEvent } from 'nostr-tools';
   import type { RxNostr } from 'rx-nostr';
   import Pai from '$lib/components/Pai.svelte';
+  import { addHai } from '$lib/mjlib/mj_common';
 
   export let isNakuTurn: boolean;
   export let lastEventsToReply: NostrEvent[] | undefined;
@@ -84,33 +91,26 @@
   {/if}
 {/if}
 {#if isSutehaiTurn}
+  {@const cTehai = tehai.get(loginPubkey) ?? ''}
+  {@const cTsumohai = tsumohai.get(loginPubkey) ?? ''}
   sutehai?
-  {#if canAnkan(tehai.get(loginPubkey) ?? '', tsumohai.get(loginPubkey) ?? '', nokori) || canKakan(tehai.get(loginPubkey) ?? '', tsumohai.get(loginPubkey) ?? '', nokori)}
+  {#each getAnkanHai(addHai(cTehai, cTsumohai)) as h}
     <br /><button
-      disabled={['ankan', 'kakan'].includes(sutehaiCommand)}
       on:click={() => {
-        if (loginPubkey === undefined) return;
-        if (
-          canAnkan(
-            tehai.get(loginPubkey) ?? '',
-            tsumohai.get(loginPubkey) ?? '',
-            nokori,
-          )
-        ) {
-          setSutehai('ankan');
-        } else if (
-          canKakan(
-            tehai.get(loginPubkey) ?? '',
-            tsumohai.get(loginPubkey) ?? '',
-            nokori,
-          )
-        ) {
-          setSutehai('kakan');
-        }
-      }}>kan</button
-    >
-  {/if}
-  {#if canRichi(tehai.get(loginPubkey) ?? '', tsumohai.get(loginPubkey) ?? '', isRichi.get(loginPubkey) ?? false, nokori)}
+        setSutehai('ankan');
+        sendDapai(h);
+      }}>ankan</button
+    ><Pai pai={h} isDora={doras.includes(h)} hide={false} />
+  {/each}
+  {#each getKakanHai(addHai(cTehai, cTsumohai)) as h}
+    <br /><button
+      on:click={() => {
+        setSutehai('kakan');
+        sendDapai(h);
+      }}>kakan</button
+    ><Pai pai={h} isDora={doras.includes(h)} hide={false} />
+  {/each}
+  {#if canRichi(cTehai, cTsumohai, isRichi.get(loginPubkey) ?? false, nokori)}
     <br /><button
       disabled={sutehaiCommand === 'richi'}
       on:click={() => {
@@ -118,7 +118,7 @@
       }}>richi</button
     >
   {/if}
-  {#if canTsumo(tehai.get(loginPubkey) ?? '', tsumohai.get(loginPubkey) ?? '')}
+  {#if canTsumo(cTehai, cTsumohai)}
     <br /><button
       on:click={() => {
         setSutehai('tsumo');
