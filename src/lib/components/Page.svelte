@@ -73,6 +73,7 @@
 
   const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
   const sleepInterval = 500;
+  let enableFastForward: boolean = false;
 
   const getNpubWithNIP07 = async (): Promise<void> => {
     const nostr = window.nostr;
@@ -120,6 +121,7 @@
   };
 
   const gamestartByForce = async () => {
+    enableFastForward = true;
     sendMention('reset');
     await sleep(200);
     sendMention('gamestart');
@@ -236,7 +238,8 @@
           continue;
         }
         if (ev.content.includes('NOTIFY')) {
-          if (sleepInterval !== undefined) await sleep(sleepInterval);
+          if (sleepInterval !== undefined && !enableFastForward)
+            await sleep(sleepInterval);
           lastEventsToReply = undefined;
           requestedCommand = undefined;
           const p = ev.tags
@@ -444,6 +447,11 @@
       on:click={() => {
         loginPubkey = undefined;
       }}>Logout</button
+    >
+    <button
+      on:click={() => {
+        enableFastForward = true;
+      }}>⏩</button
     >
     {nip19.npubEncode(loginPubkey)}
     <br />
