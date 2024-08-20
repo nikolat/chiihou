@@ -37,6 +37,7 @@
   import Command from '$lib/components/Command.svelte';
   import { nip19, type NostrEvent } from 'nostr-tools';
   import { Subject } from 'rxjs';
+  import { getShanten } from '$lib/mjlib/mj_shanten';
 
   let events: NostrEvent[] = [];
   let players: Map<string, NostrEvent | undefined> = new Map<
@@ -120,10 +121,10 @@
 
   const gamestartByForce = async () => {
     sendMention('reset');
-    await sleep(100);
+    await sleep(200);
     sendMention('gamestart');
     for (let i = 0; i <= 2; i++) {
-      await sleep(100);
+      await sleep(200);
       sendMention('join', mahjongPlayerPubkeys[i]);
     }
   };
@@ -573,7 +574,8 @@
         {points.get(key)}点 {pointDiff.get(key) ?? ''}
         <br /><img
           class="player"
-          alt=""
+          alt={profile.name ?? ''}
+          title={profile.name ?? ''}
           src={profile.picture ?? getRoboHashURL(key)}
         />
         <div class="command">
@@ -601,8 +603,17 @@
       <dd>
         <div class="tehai">
           {#each paigazouTehai?.at(0) ?? [] as pai}
-            {#if isSutehaiTurn}
-              <button class="dapai" on:click={() => sendDapai(pai)}
+            {#if isSutehaiTurn && loginPubkey === key}
+              <button
+                class="dapai"
+                disabled={sutehaiCommand === 'richi' &&
+                  getShanten(
+                    removeHai(
+                      addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''),
+                      pai,
+                    ),
+                  )[0] > 0}
+                on:click={() => sendDapai(pai)}
                 ><Pai
                   {pai}
                   isDora={doras.includes(pai)}
@@ -638,9 +649,16 @@
             )
           {/each}
           {#if tsumohai.get(key)?.length ?? 0 > 0}
-            {#if isSutehaiTurn}
+            {#if isSutehaiTurn && loginPubkey === key}
               <button
                 class="dapai"
+                disabled={sutehaiCommand === 'richi' &&
+                  getShanten(
+                    removeHai(
+                      addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''),
+                      tsumohai.get(key) ?? '',
+                    ),
+                  )[0] > 0}
                 on:click={() => sendDapai(tsumohai.get(key) ?? '')}
                 ><Pai
                   pai={tsumohai.get(key) ?? ''}
@@ -733,6 +751,10 @@
     padding: 0;
     height: 30px;
     cursor: pointer;
+  }
+  button.dapai:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
   @media all and (min-width: 480px) {
     .players dt {
