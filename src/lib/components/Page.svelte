@@ -146,7 +146,6 @@
     const flushes$ = new Subject<void>();
 
     const next = (packet: EventPacket) => {
-      //console.log(packet);
       const event = packet.event;
       switch (event.kind) {
         case 0:
@@ -160,19 +159,59 @@
           }
           break;
         case 42:
-          events.push(event);
-          events = events;
+          events = insertEventIntoDescendingList(events, event);
           break;
         default:
           break;
       }
     };
-    const complete = async () => {
-      //console.log('Completed!');
-      events = sortEvents(events);
+    const complete1 = async () => {
+      const lastKyokuStartEvent = events.find((ev) =>
+        ev.tags.some(
+          (tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === 'kyokustart',
+        ),
+      );
+      if (lastKyokuStartEvent === undefined) {
+        console.warn('#kyokustart is not found');
+        return;
+      }
+      players = new Map<string, NostrEvent>();
+      const pubkeys = lastKyokuStartEvent.tags
+        .filter((tag) => tag.length >= 2 && tag[0] === 'p')
+        .map((tag) => tag[1]);
+      for (const pubkey of pubkeys) {
+        players.set(pubkey, undefined);
+      }
+      const rxReqB2 = createRxBackwardReq();
+      const subscriptionB2 = rxNostr
+        .use(rxReqB2)
+        .pipe(uniq(flushes$))
+        .subscribe(next);
+      rxReqB2.emit({ kinds: [0], authors: pubkeys, until: now });
+      rxReqB2.over();
+      const rxReqB3 = createRxBackwardReq();
+      const subscriptionB3 = rxNostr
+        .use(rxReqB3)
+        .pipe(uniq(flushes$))
+        .subscribe({ next, complete: complete2 });
+      rxReqB3.emit({
+        kinds: [42],
+        authors: [mahjongServerPubkey],
+        '#e': [mahjongRoomId],
+        since: lastKyokuStartEvent.created_at - 1,
+        until: now,
+      });
+      rxReqB3.over();
+    };
+    const complete2 = async () => {
       let startIndex = 0;
       for (const ev of events) {
-        if (ev.content.includes('NOTIFY kyokustart')) {
+        if (
+          ev.tags.some(
+            (tag) =>
+              tag.length >= 2 && tag[0] === 't' && tag[1] === 'kyokustart',
+          )
+        ) {
           break;
         }
         startIndex++;
@@ -192,12 +231,11 @@
     const subscriptionB = rxNostr
       .use(rxReqB)
       .pipe(uniq(flushes$))
-      .subscribe({ next, complete });
+      .subscribe({ next, complete: complete1 });
     const subscriptionF = rxNostr
       .use(rxReqF)
       .pipe(uniq(flushes$))
       .subscribe((packet) => {
-        //console.log(packet);
         events = insertEventIntoDescendingList(events, packet.event);
         replay([packet.event]);
       });
@@ -205,7 +243,8 @@
       kinds: [42],
       authors: [mahjongServerPubkey],
       '#e': [mahjongRoomId],
-      limit: 300,
+      '#t': ['gamestart', 'kyokustart'],
+      limit: 30,
       until: now,
     });
     rxReqB.over();
@@ -251,10 +290,8 @@
           );
           if (m === null) return;
           const command = m[1];
-          //console.log(command);
           switch (command) {
             case 'gamestart':
-              players = new Map<string, NostrEvent>();
               break;
             case 'kyokustart':
               bafu = m[2];
@@ -271,18 +308,6 @@
               uradorahyoujihai = '';
               sutehaiCommand = 'sutehai';
               result = '';
-              const pubkeys = ev.tags
-                .filter((tag) => tag.length >= 2 && tag[0] === 'p')
-                .map((tag) => tag[1]);
-              for (const pubkey of pubkeys) {
-                players.set(pubkey, undefined);
-              }
-              const rxReqB2 = createRxBackwardReq();
-              const subscriptionB2 = rxNostr
-                .use(rxReqB2)
-                .pipe(uniq(flushes$))
-                .subscribe(next);
-              rxReqB2.emit({ kinds: [0], authors: pubkeys, until: now });
               break;
             case 'point':
               const playerName = m[2];
@@ -600,7 +625,7 @@
           : 'player'}
       >
         {profile.display_name ?? ''} @{profile.name ?? ''}
-        {points.get(key)}点 {pointDiff.get(key) ?? ''}
+        {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
         <br /><img
           class="player"
           alt={profile.name ?? ''}
