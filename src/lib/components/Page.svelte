@@ -44,6 +44,9 @@
     string,
     NostrEvent | undefined
   >();
+  let sekijun: string[] = [];
+  let kyoku: number;
+  let kaze: Map<string, string> = new Map<string, string>();
   let points: Map<string, number> = new Map<string, number>();
   let pointDiff: Map<string, string> = new Map<string, string>();
   let tehai: Map<string, string> = new Map<string, string>();
@@ -202,19 +205,6 @@
       rxReqB3.over();
     };
     const complete2 = async () => {
-      let startIndex = 0;
-      for (const ev of events) {
-        if (
-          ev.tags.some(
-            (tag) =>
-              tag.length >= 2 && tag[0] === 't' && tag[1] === 'kyokustart',
-          )
-        ) {
-          break;
-        }
-        startIndex++;
-      }
-      events = events.slice(0, startIndex + 1);
       const isKyokuEnd = events.some((ev) =>
         ev.content.includes('NOTIFY kyokuend'),
       );
@@ -241,8 +231,16 @@
       kinds: [42],
       authors: [mahjongServerPubkey],
       '#e': [mahjongRoomId],
-      '#t': ['gamestart', 'kyokustart'],
-      limit: 30,
+      '#t': ['gamestart'],
+      limit: 4,
+      until: now,
+    });
+    rxReqB.emit({
+      kinds: [42],
+      authors: [mahjongServerPubkey],
+      '#e': [mahjongRoomId],
+      '#t': ['kyokustart'],
+      limit: 1,
       until: now,
     });
     rxReqB.over();
@@ -276,7 +274,11 @@
           continue;
         }
         if (ev.content.includes('NOTIFY')) {
-          if (sleepInterval !== undefined && !enableFastForward)
+          if (
+            sleepInterval !== undefined &&
+            !enableFastForward &&
+            !/gamestart|point/.test(ev.content)
+          )
             await sleep(sleepInterval);
           lastEventsToReply = new Map<string, NostrEvent>();
           requestedCommand = undefined;
@@ -291,9 +293,19 @@
           const command = m[1];
           switch (command) {
             case 'gamestart':
+              const p = ev.tags
+                .find((tag) => tag.length >= 2 && tag[0] === 'p')
+                ?.at(1);
+              if (p === undefined) return;
+              const mG = ev.content.match(/NOTIFY\sgamestart\s(東|南|西|北)/);
+              if (mG === null) return;
+              const seki: number = ['東', '南', '西', '北'].indexOf(mG[1]);
+              sekijun[seki] = p;
               break;
             case 'kyokustart':
               bafu = m[2];
+              const oya = nip19.decode(m[3].replace('nostr:', ''))
+                .data as string;
               tsumibou = parseInt(m[4]);
               kyoutaku = parseInt(m[5]);
               tehai = new Map<string, string>();
@@ -307,6 +319,13 @@
               uradorahyoujihai = '';
               sutehaiCommand = 'sutehai';
               result = '';
+              const idx = sekijun.indexOf(oya);
+              kyoku = idx + 1;
+              kaze.set(sekijun[idx], '東');
+              kaze.set(sekijun[(idx + 1) % 4], '南');
+              kaze.set(sekijun[(idx + 2) % 4], '西');
+              kaze.set(sekijun[(idx + 3) % 4], '北');
+              kaze = kaze;
               break;
             case 'point':
               const playerName = m[2];
@@ -565,7 +584,7 @@
 <main>
   <h2>Info</h2>
   <p>
-    {bafu ?? '?'}場
+    {bafu ?? '?'}{kyoku ?? '0'}局
     <img
       src={awayuki_mahjong_emojis.mahjong_stick100}
       alt="積み棒"
@@ -607,6 +626,7 @@
       {@const paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '')}
       {@const paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '')}
       <dt class={lastEventsToReply.has(key) ? 'player turn' : 'player'}>
+        {kaze.get(key) ?? '?'}家
         {profile.display_name ?? ''} @{profile.name ?? ''}
         {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
         <br /><img
