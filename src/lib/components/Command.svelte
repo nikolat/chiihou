@@ -1,20 +1,14 @@
 <script lang="ts">
   import { mahjongServerPubkey } from '$lib/config';
   import { canRichi, getChiMaterial, getKakanHai } from '$lib/mjlib/mj_ai';
-  import {
-    canAnkan,
-    canKakan,
-    canTsumo,
-    getAnkanHai,
-    getTagsReply,
-  } from '$lib/utils';
+  import { canTsumo, getAnkanHai, getTagsReply } from '$lib/utils';
   import { nip19, type NostrEvent } from 'nostr-tools';
   import type { RxNostr } from 'rx-nostr';
   import Pai from '$lib/components/Pai.svelte';
   import { addHai } from '$lib/mjlib/mj_common';
 
   export let isNakuTurn: boolean;
-  export let lastEventsToReply: NostrEvent[] | undefined;
+  export let lastEventsToReply: Map<string, NostrEvent>;
   export let rxNostr: RxNostr;
   export let loginPubkey: string;
   export let nakuKinds: Map<string, string[] | undefined>;
@@ -30,18 +24,12 @@
   export let sendDapai: (pai: string) => void;
 
   const sendReply = (message: string) => {
-    if (lastEventsToReply === undefined) return;
+    const ev = lastEventsToReply.get(loginPubkey);
+    if (ev === undefined) return;
     rxNostr.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} naku? ${message}`,
-      tags: getTagsReply(
-        lastEventsToReply.find((ev) =>
-          ev.tags.some(
-            (tag) =>
-              tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
-          ),
-        )!,
-      ),
+      tags: getTagsReply(ev),
     });
   };
 </script>

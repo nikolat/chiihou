@@ -66,7 +66,10 @@
   let nokori: number;
 
   let loginPubkey: string | undefined;
-  let lastEventsToReply: NostrEvent[] | undefined;
+  let lastEventsToReply: Map<string, NostrEvent> = new Map<
+    string,
+    NostrEvent
+  >();
   let requestedCommand: string | undefined;
 
   let rxNostr: RxNostr;
@@ -90,18 +93,13 @@
   };
 
   const sendDapai = (pai: string) => {
-    if (lastEventsToReply === undefined) return;
+    if (loginPubkey === undefined) return;
+    const ev = lastEventsToReply.get(loginPubkey);
+    if (ev === undefined) return;
     rxNostr.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
-      tags: getTagsReply(
-        lastEventsToReply.find((ev) =>
-          ev.tags.some(
-            (tag) =>
-              tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
-          ),
-        )!,
-      ),
+      tags: getTagsReply(ev),
     });
     sutehaiCommand = 'sutehai';
   };
@@ -252,10 +250,11 @@
     const replay = async (events: NostrEvent[], sleepInterval?: number) => {
       for (const ev of events) {
         if (ev.content.includes('GET')) {
-          if (lastEventsToReply === undefined) {
-            lastEventsToReply = [];
-          }
-          lastEventsToReply.push(ev);
+          const p = ev.tags
+            .find((tag) => tag.length >= 2 && tag[0] === 'p')
+            ?.at(1);
+          if (p === undefined) return;
+          lastEventsToReply.set(p, ev);
           const m = ev.content.match(
             /GET\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
           );
@@ -279,7 +278,7 @@
         if (ev.content.includes('NOTIFY')) {
           if (sleepInterval !== undefined && !enableFastForward)
             await sleep(sleepInterval);
-          lastEventsToReply = undefined;
+          lastEventsToReply = new Map<string, NostrEvent>();
           requestedCommand = undefined;
           const p = ev.tags
             .find((tag) => tag.length >= 2 && tag[0] === 'p')!
@@ -460,20 +459,12 @@
   });
 
   $: isSutehaiTurn =
-    lastEventsToReply !== undefined &&
-    lastEventsToReply.some((ev) =>
-      ev.tags.some(
-        (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
-      ),
-    ) &&
+    loginPubkey !== undefined &&
+    lastEventsToReply.has(loginPubkey) &&
     requestedCommand === 'sutehai?';
   $: isNakuTurn =
-    lastEventsToReply !== undefined &&
-    lastEventsToReply.some((ev) =>
-      ev.tags.some(
-        (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === loginPubkey,
-      ),
-    ) &&
+    loginPubkey !== undefined &&
+    lastEventsToReply.has(loginPubkey) &&
     requestedCommand === 'naku?';
   $: doras = stringToArrayPlain(
     getDoraFromDorahyouji(`${dorahyoujihai ?? ''}${uradorahyoujihai ?? ''}`),
@@ -615,15 +606,7 @@
       {@const profile = JSON.parse(value?.content || '{}')}
       {@const paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '')}
       {@const paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '')}
-      <dt
-        class={lastEventsToReply?.some((ev) =>
-          ev.tags.some(
-            (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] === key,
-          ),
-        )
-          ? 'player turn'
-          : 'player'}
-      >
+      <dt class={lastEventsToReply.has(key) ? 'player turn' : 'player'}>
         {profile.display_name ?? ''} @{profile.name ?? ''}
         {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
         <br /><img
