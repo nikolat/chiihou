@@ -178,7 +178,7 @@
         startIndex++;
       }
       events = events.slice(0, startIndex + 1);
-      const isKyokuEnd = events.some(ev =>
+      const isKyokuEnd = events.some((ev) =>
         ev.content.includes('NOTIFY kyokuend'),
       );
       await replay(events.toReversed(), isKyokuEnd ? sleepInterval : 0);
@@ -404,6 +404,27 @@
               result = '流局';
               break;
             case 'kyokuend':
+              break;
+            case 'gameend':
+              const itr = ev.content.matchAll(/nostr:(npub1\w+)\s(-?\d+)/g);
+              const scoremap = new Map<string, number>();
+              for (const m of itr) {
+                const pubkeyG = nip19.decode(m[1]).data as string;
+                const score = parseInt(m[2]);
+                scoremap.set(pubkeyG, score);
+              }
+              let i = 0;
+              const rank = ['🥇', '🥈', '🥉', '🏅'];
+              const r2 = [];
+              const sortedScoreMap = new Map(
+                [...scoremap].sort((a, b) => b[1] - a[1]),
+              );
+              for (const [k, v] of sortedScoreMap) {
+                const profile = JSON.parse(players.get(k)?.content || '{}');
+                r2.push(`${rank[i]} @${profile.name ?? ''}: ${v}`);
+                i++;
+              }
+              result = r2.join('\n');
               break;
             default:
               break;
