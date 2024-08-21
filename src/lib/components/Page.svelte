@@ -178,7 +178,7 @@
         startIndex++;
       }
       events = events.slice(0, startIndex + 1);
-      const isKyokuEnd = events.some((ev) =>
+      const isKyokuEnd = events.some(ev =>
         ev.content.includes('NOTIFY kyokuend'),
       );
       await replay(events.toReversed(), isKyokuEnd ? sleepInterval : 0);
@@ -205,7 +205,7 @@
       kinds: [42],
       authors: [mahjongServerPubkey],
       '#e': [mahjongRoomId],
-      limit: 200,
+      limit: 300,
       until: now,
     });
     rxReqB.over();
@@ -335,8 +335,8 @@
               const npubS = playerNameS.replace('nostr:', '');
               const pubkeyS = nip19.decode(npubS).data as string;
               let newTehai = addHai(
-                tehai.get(pubkeyS)!,
-                tsumohai.get(pubkeyS)!,
+                tehai.get(pubkeyS) ?? '',
+                tsumohai.get(pubkeyS) ?? '',
               );
               newTehai = removeHai(newTehai, paiS);
               tehai.set(pubkeyS, newTehai);
