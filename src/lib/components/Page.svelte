@@ -491,11 +491,11 @@
 </script>
 
 <svelte:head>
-  <title>rx-nostr-practice</title>
+  <title>地鳳</title>
 </svelte:head>
 
 <header>
-  <h1>rx-nostr-practice</h1>
+  <h1>地鳳</h1>
   {#if loginPubkey === undefined}
     <button on:click={getNpubWithNIP07}>NIP-07 Login</button>
   {:else}
