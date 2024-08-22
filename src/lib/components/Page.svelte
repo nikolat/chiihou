@@ -24,7 +24,6 @@
     setAnkan,
     setFuro,
     setKakan,
-    sortEvents,
   } from '$lib/utils';
   import {
     addHai,
@@ -99,10 +98,12 @@
     if (loginPubkey === undefined) return;
     const ev = lastEventsToReply.get(loginPubkey);
     if (ev === undefined) return;
+    const now = Math.floor(Date.now() / 1000);
     rxNostr.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
       tags: getTagsReply(ev),
+      created_at: ev.created_at < now ? now : ev.created_at + 1,
     });
     sutehaiCommand = 'sutehai';
   };
