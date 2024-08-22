@@ -53,6 +53,7 @@
   let sutehai: Map<string, string> = new Map<string, string>();
   let say: Map<string, string> = new Map<string, string>();
   let richiJunme: Map<string, number> = new Map<string, number>();
+  let furoJunme: Map<string, number[]> = new Map<string, number[]>();
   let nakuKinds: Map<string, string[] | undefined> = new Map<
     string,
     string[] | undefined
@@ -64,6 +65,7 @@
   let uradorahyoujihai: string;
   let result: string;
   let sutehaiSaved: string;
+  let sutehaiPlayerSaved: string;
   let sutehaiCommand: string;
   let nokori: number;
 
@@ -314,6 +316,7 @@
               sutehai = new Map<string, string>();
               say = new Map<string, string>();
               richiJunme = new Map<string, number>();
+              furoJunme = new Map<string, number[]>();
               pointDiff = new Map<string, string>();
               nakuKinds = new Map<string, string[] | undefined>();
               dorahyoujihai = '';
@@ -372,6 +375,7 @@
               say.set(pubkeyT, '');
               say = say;
               sutehaiSaved = '';
+              sutehaiPlayerSaved = '';
               break;
             case 'sutehai':
               const playerNameS = m[2];
@@ -390,6 +394,7 @@
               tsumohai = tsumohai;
               sutehai = sutehai;
               sutehaiSaved = paiS;
+              sutehaiPlayerSaved = pubkeyS;
               break;
             case 'say':
               const playerNameSS = m[2];
@@ -429,6 +434,13 @@
                   const opened = paiOpen.replace(sutehaiSaved, '');
                   const newTehai = setFuro(t, sutehaiSaved, opened);
                   tehai.set(pubkeyO, newTehai);
+                  furoJunme.set(
+                    sutehaiPlayerSaved,
+                    (furoJunme.get(sutehaiPlayerSaved) ?? []).concat(
+                      (sutehai.get(sutehaiPlayerSaved)?.length ?? 0) / 2 - 1,
+                    ),
+                  );
+                  furoJunme = furoJunme;
                 }
               }
               tehai = tehai;
@@ -603,10 +615,12 @@
     {#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
         pai={p}
         isDora={doras.includes(p)}
+        isRemoved={false}
         hide={false}
       />{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
         pai={p}
         isDora={false}
+        isRemoved={false}
         hide={true}
       />{/each}
     {#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
@@ -614,10 +628,12 @@
       {#each stringToArrayPlain(uradorahyoujihai) as p}<Pai
           pai={p}
           isDora={doras.includes(p)}
+          isRemoved={false}
           hide={false}
         />{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
           pai={p}
           isDora={false}
+          isRemoved={false}
           hide={true}
         />{/each}
     {/if}
@@ -678,6 +694,7 @@
                 ><Pai
                   {pai}
                   isDora={doras.includes(pai)}
+                  isRemoved={false}
                   hide={loginPubkey !== undefined &&
                     loginPubkey !== key &&
                     result === ''}
@@ -687,6 +704,7 @@
               <Pai
                 {pai}
                 isDora={doras.includes(pai)}
+                isRemoved={false}
                 hide={loginPubkey !== undefined &&
                   loginPubkey !== key &&
                   result === ''}
@@ -697,7 +715,12 @@
             {@const pa = stringToArrayPlain(pai)}
             &lt;
             {#each pa as p}
-              <Pai pai={p} isDora={doras.includes(p)} hide={false} />
+              <Pai
+                pai={p}
+                isDora={doras.includes(p)}
+                isRemoved={false}
+                hide={false}
+              />
             {/each}
             &gt;
           {/each}
@@ -705,7 +728,12 @@
             {@const pa = stringToArrayPlain(pai)}
             (
             {#each pa as p}
-              <Pai pai={p} isDora={doras.includes(p)} hide={false} />
+              <Pai
+                pai={p}
+                isDora={doras.includes(p)}
+                isRemoved={false}
+                hide={false}
+              />
             {/each}
             )
           {/each}
@@ -724,6 +752,7 @@
                 ><Pai
                   pai={tsumohai.get(key) ?? ''}
                   isDora={doras.includes(tsumohai.get(key) ?? '')}
+                  isRemoved={false}
                   hide={loginPubkey !== undefined &&
                     loginPubkey !== key &&
                     result === ''}
@@ -733,6 +762,7 @@
               <Pai
                 pai={tsumohai.get(key) ?? ''}
                 isDora={doras.includes(tsumohai.get(key) ?? '')}
+                isRemoved={false}
                 hide={loginPubkey !== undefined &&
                   loginPubkey !== key &&
                   result === ''}
@@ -749,6 +779,7 @@
               />{/if}{#if [6, 12].includes(i)}<br />{/if}<Pai
               pai={p}
               isDora={doras.includes(p)}
+              isRemoved={furoJunme.get(key)?.includes(i) ?? false}
               hide={false}
             />{/each}
         </div>

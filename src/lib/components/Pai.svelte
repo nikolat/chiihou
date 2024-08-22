@@ -3,11 +3,12 @@
 
   export let pai: string;
   export let isDora: boolean;
+  export let isRemoved: boolean;
   export let hide: boolean;
 </script>
 
 <img
-  class={isDora ? 'pai dora' : 'pai'}
+  class={'pai' + (isDora ? ' dora' : '') + (isRemoved ? ' removed' : '')}
   alt={pai}
   src={getEmojiUrl(hide ? 'back' : pai)}
 />
@@ -18,5 +19,8 @@
   }
   .dora {
     box-shadow: 1px 1px 1px 1px yellow;
+  }
+  .removed {
+    opacity: 0.25;
   }
 </style>

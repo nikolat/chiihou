@@ -58,9 +58,15 @@
         on:click={() => {
           sendReply(`chi ${pai1} ${pai2}`);
         }}>chi</button
-      ><Pai pai={pai1} isDora={doras.includes(pai1)} hide={false} /><Pai
+      ><Pai
+        pai={pai1}
+        isDora={doras.includes(pai1)}
+        isRemoved={false}
+        hide={false}
+      /><Pai
         pai={pai2}
         isDora={doras.includes(pai2)}
+        isRemoved={false}
         hide={false}
       />
     {/each}
@@ -90,7 +96,7 @@
         setSutehai('ankan');
         sendDapai(h);
       }}>ankan</button
-    ><Pai pai={h} isDora={doras.includes(h)} hide={false} />
+    ><Pai pai={h} isDora={doras.includes(h)} isRemoved={false} hide={false} />
   {/each}
   {#each getKakanHai(addHai(cTehai, cTsumohai)) as h}
     <br /><button
@@ -98,7 +104,7 @@
         setSutehai('kakan');
         sendDapai(h);
       }}>kakan</button
-    ><Pai pai={h} isDora={doras.includes(h)} hide={false} />
+    ><Pai pai={h} isDora={doras.includes(h)} isRemoved={false} hide={false} />
   {/each}
   {#if canRichi(cTehai, cTsumohai, isRichi, nokori)}
     <br /><button
