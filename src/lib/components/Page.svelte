@@ -814,6 +814,7 @@
   .players dt {
     height: 130px;
     width: 15em;
+    overflow-y: auto;
   }
   .players dt.turn {
     box-shadow: 1px 1px 5px 1px purple;
