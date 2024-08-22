@@ -52,7 +52,7 @@
   let tsumohai: Map<string, string> = new Map<string, string>();
   let sutehai: Map<string, string> = new Map<string, string>();
   let say: Map<string, string> = new Map<string, string>();
-  let isRichi: Map<string, boolean> = new Map<string, boolean>();
+  let richiJunme: Map<string, number> = new Map<string, number>();
   let nakuKinds: Map<string, string[] | undefined> = new Map<
     string,
     string[] | undefined
@@ -313,7 +313,7 @@
               tsumohai = new Map<string, string>();
               sutehai = new Map<string, string>();
               say = new Map<string, string>();
-              isRichi = new Map<string, boolean>();
+              richiJunme = new Map<string, number>();
               pointDiff = new Map<string, string>();
               nakuKinds = new Map<string, string[] | undefined>();
               dorahyoujihai = '';
@@ -402,7 +402,10 @@
                 kyoutaku += 1000;
                 points.set(pubkeySS, points.get(pubkeySS)! - 1000);
                 points = points;
-                isRichi.set(pubkeySS, true);
+                richiJunme.set(
+                  pubkeySS,
+                  (sutehai.get(pubkeySS)?.length ?? 0) / 2,
+                );
               }
               break;
             case 'open':
@@ -651,7 +654,7 @@
               {tsumohai}
               {nokori}
               {setSutehai}
-              {isRichi}
+              isRichi={(richiJunme.get(loginPubkey) ?? -1) >= 0}
               {sendDapai}
             />{/if}
           <br />
@@ -739,8 +742,11 @@
         </div>
         <br />
         <div class="kawa">
-          {#each paigazouSutehai as p, i}{#if [6, 12].includes(i)}<br
-              />{/if}<Pai
+          {#each paigazouSutehai as p, i}{#if richiJunme.get(key) === i}<img
+                src={awayuki_mahjong_emojis.mahjong_stick1000}
+                alt=""
+                class="pai"
+              />{/if}{#if [6, 12].includes(i)}<br />{/if}<Pai
               pai={p}
               isDora={doras.includes(p)}
               hide={false}
