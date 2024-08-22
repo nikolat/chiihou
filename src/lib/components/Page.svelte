@@ -256,6 +256,7 @@
             ?.at(1);
           if (p === undefined) return;
           lastEventsToReply.set(p, ev);
+          lastEventsToReply = lastEventsToReply;
           const m = ev.content.match(
             /GET\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
           );
