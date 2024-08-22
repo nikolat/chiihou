@@ -79,7 +79,6 @@ export const setFuro = (
 };
 
 export const setKakan = (tehai: string, kakanHai: string): string => {
-  tehai = removeHai(tehai, kakanHai);
   tehai = tehai.replace(kakanHai.repeat(3), kakanHai.repeat(4));
   return tehai;
 };
