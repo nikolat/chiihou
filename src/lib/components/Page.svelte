@@ -139,6 +139,14 @@
     sutehaiCommand = value;
   };
 
+  const zap = (pubkey: string) => {
+    const elm = document.createElement('button') as HTMLButtonElement;
+    elm.dataset.npub = nip19.npubEncode(pubkey);
+    elm.dataset.relays = defaultRelays.join(',');
+    (window as any).nostrZap.initTarget(elm);
+    elm.dispatchEvent(new Event('click'));
+  };
+
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
@@ -508,6 +516,10 @@
 </script>
 
 <svelte:head>
+  <script
+    type="module"
+    src="https://cdn.jsdelivr.net/npm/nostr-zap@1.1.0"
+  ></script>
   <title>地鳳</title>
 </svelte:head>
 
@@ -649,6 +661,8 @@
       <dt class={lastEventsToReply.has(key) ? 'player turn' : 'player'}>
         {kaze.get(key) ?? '?'}家
         {profile.display_name ?? ''} @{profile.name ?? ''}
+        <br />
+        <button class="zap" title="Zap!" on:click={() => zap(key)}>⚡️</button>
         {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
         <br /><img
           class="player"
@@ -797,6 +811,9 @@
 </main>
 <footer>
   <a href={linkGitHub} target="_blank" rel="noopener noreferrer">GitHub</a>
+  <button class="zap" title="Zap!" on:click={() => zap(mahjongServerPubkey)}
+    >⚡️</button
+  >
   牌画像 (c)
   <a
     href="https://awayuki.github.io/emojis.html#mahjong"
