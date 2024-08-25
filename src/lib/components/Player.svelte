@@ -56,7 +56,10 @@
     (lastEventsToReply.has(key) && requestedCommand === 'sutehai?'
       ? ' sutehai_turn'
       : '') +
-    (lastEventsToReply.has(key) && requestedCommand === 'naku?'
+    (lastEventsToReply.has(key) &&
+    requestedCommand === 'naku?' &&
+    (loginPubkey === undefined ||
+      (loginPubkey !== undefined && loginPubkey === key))
       ? ' naku_turn'
       : '')}
 >
