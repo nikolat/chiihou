@@ -4,14 +4,8 @@
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
   import { onMount } from 'svelte';
+  import { defaultRelays, linkGitHub, mahjongServerPubkey } from '$lib/config';
   import {
-    defaultRelays,
-    getRoboHashURL,
-    linkGitHub,
-    mahjongServerPubkey,
-  } from '$lib/config';
-  import {
-    awayuki_mahjong_emojis,
     fetchEventsToReplay,
     sendDapai,
     setAnkan,
@@ -25,12 +19,9 @@
     getDoraFromDorahyouji,
     removeHai,
     stringToArrayPlain,
-    stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
-  import { getShanten } from '$lib/mjlib/mj_shanten';
   import Menu from '$lib/components/Menu.svelte';
-  import Command from '$lib/components/Command.svelte';
-  import Pai from '$lib/components/Pai.svelte';
+  import Info from '$lib/components/Info.svelte';
   import Player from '$lib/components/Player.svelte';
 
   let events: NostrEvent[] = [];
@@ -39,7 +30,6 @@
     NostrEvent | undefined
   >();
   let sekijun: string[] = [];
-  let kyoku: number;
   let kaze: Map<string, string> = new Map<string, string>();
   let points: Map<string, number> = new Map<string, number>();
   let pointDiff: Map<string, string> = new Map<string, string>();
@@ -54,52 +44,44 @@
     string[] | undefined
   >();
   let bafu: string;
+  let kyoku: number;
   let tsumibou: number;
   let kyoutaku: number;
+  let nokori: number;
   let dorahyoujihai: string;
   let uradorahyoujihai: string;
   let result: string;
   let sutehaiSaved: string;
   let sutehaiPlayerSaved: string;
   let sutehaiCommand: string;
-  let nokori: number;
-
   let loginPubkey: string | undefined;
   let lastEventsToReply: Map<string, NostrEvent> = new Map<
     string,
     NostrEvent
   >();
   let requestedCommand: string | undefined;
-
   let rxNostr: RxNostr;
-
   const sleepInterval = 500;
   let enableFastForward: boolean = false;
 
   const setLoginPubkey = (value: string | undefined) => {
     loginPubkey = value;
   };
-
   const setEnableFastForward = (value: boolean) => {
     enableFastForward = value;
   };
-
   const setSutehaiCommand = (value: string) => {
     sutehaiCommand = value;
   };
-
   const setSutehai = (value: string) => {
     sutehaiCommand = value;
   };
-
   const setPlayers = (value: Map<string, NostrEvent | undefined>) => {
     players = value;
   };
-
   const setEvents = (value: NostrEvent[]) => {
     events = value;
   };
-
   const callSendDapai = (pai: string | undefined) => {
     if (pai === undefined) return;
     if (loginPubkey === undefined) return;
@@ -390,50 +372,17 @@
 </header>
 <main>
   <h2>Info</h2>
-  <p>
-    {bafu ?? '?'}{kyoku ?? '0'}局
-    <img
-      src={awayuki_mahjong_emojis.mahjong_stick100}
-      alt="積み棒"
-      class="pai"
-    />x{tsumibou ?? '0'}
-    <img
-      src={awayuki_mahjong_emojis.mahjong_stick1000}
-      alt="供託"
-      class="pai"
-    />x{kyoutaku === undefined ? '0' : kyoutaku / 1000} 残り{nokori ?? 0}枚
-    <br />
-    {#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
-        pai={p}
-        isDora={doras.includes(p)}
-        isRemoved={false}
-        hide={false}
-        atari={false}
-      />{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
-        pai={p}
-        isDora={false}
-        isRemoved={false}
-        hide={true}
-        atari={false}
-      />{/each}
-    {#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
-      <br />
-      {#each stringToArrayPlain(uradorahyoujihai) as p}<Pai
-          pai={p}
-          isDora={doras.includes(p)}
-          isRemoved={false}
-          hide={false}
-          atari={false}
-        />{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
-          pai={p}
-          isDora={false}
-          isRemoved={false}
-          hide={true}
-          atari={false}
-        />{/each}
-    {/if}
-  </p>
-  <pre>{result ?? ''}</pre>
+  <Info
+    {bafu}
+    {kyoku}
+    {tsumibou}
+    {kyoutaku}
+    {nokori}
+    {dorahyoujihai}
+    {uradorahyoujihai}
+    {doras}
+    {result}
+  />
   <h2>Players</h2>
   <dl class="players">
     {#each Array.from(players.entries()) as [key, value]}
@@ -489,9 +438,6 @@
 </footer>
 
 <style>
-  .pai {
-    height: 30px;
-  }
   .log {
     border: 1px gray solid;
     height: 10em;

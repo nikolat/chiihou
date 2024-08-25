@@ -1,16 +1,16 @@
 <script lang="ts">
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
+  import { defaultRelays, getRoboHashURL } from '$lib/config';
+  import { awayuki_mahjong_emojis, zap } from '$lib/utils';
   import {
     addHai,
     removeHai,
     stringToArrayPlain,
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
-  import { defaultRelays, getRoboHashURL } from '$lib/config';
-  import Command from '$lib/components/Command.svelte';
-  import { awayuki_mahjong_emojis, zap } from '$lib/utils';
   import { getShanten } from '$lib/mjlib/mj_shanten';
+  import Command from '$lib/components/Command.svelte';
   import Pai from '$lib/components/Pai.svelte';
 
   export let key: string;
