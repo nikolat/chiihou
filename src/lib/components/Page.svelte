@@ -43,24 +43,24 @@
     string,
     string[] | undefined
   >();
-  let bafu: string;
-  let kyoku: number;
-  let tsumibou: number;
-  let kyoutaku: number;
-  let nokori: number;
-  let dorahyoujihai: string;
-  let uradorahyoujihai: string;
-  let result: string;
-  let sutehaiSaved: string;
-  let sutehaiPlayerSaved: string;
-  let sutehaiCommand: string;
+  let bafu: string | undefined;
+  let kyoku: number | undefined;
+  let tsumibou: number | undefined;
+  let kyoutaku: number | undefined;
+  let nokori: number | undefined;
+  let dorahyoujihai: string | undefined;
+  let uradorahyoujihai: string | undefined;
+  let result: string | undefined;
+  let sutehaiSaved: string = '';
+  let sutehaiPlayerSaved: string = '';
+  let sutehaiCommand: string = '';
   let loginPubkey: string | undefined;
   let lastEventsToReply: Map<string, NostrEvent> = new Map<
     string,
     NostrEvent
   >();
   let requestedCommand: string | undefined;
-  let rxNostr: RxNostr;
+  let rxNostr: RxNostr | undefined;
   const sleepInterval = 500;
   let enableFastForward: boolean = false;
 
@@ -262,9 +262,10 @@
             say.set(pubkeySS, saySS);
             say = say;
             if (saySS === 'richi') {
-              kyoutaku += 1000;
+              if (kyoutaku === undefined) return;
               const point = points.get(pubkeySS);
               if (point === undefined) return;
+              kyoutaku += 1000;
               points.set(pubkeySS, point - 1000);
               points = points;
               richiJunme.set(

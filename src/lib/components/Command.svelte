@@ -10,7 +10,7 @@
 
   export let isNakuTurn: boolean;
   export let lastEventsToReply: Map<string, NostrEvent>;
-  export let rxNostr: RxNostr;
+  export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string;
   export let nakuKinds: Map<string, string[] | undefined>;
   export let tehai: Map<string, string>;
@@ -19,7 +19,7 @@
   export let isSutehaiTurn: boolean;
   export let sutehaiCommand: string;
   export let tsumohai: Map<string, string>;
-  export let nokori: number;
+  export let nokori: number | undefined;
   export let setSutehai: (value: string) => void;
   export let isRichi: boolean;
   export let callSendDapai: (pai: string | undefined) => void;
@@ -28,7 +28,7 @@
     const ev = lastEventsToReply.get(loginPubkey);
     if (ev === undefined) return;
     const now = Math.floor(Date.now() / 1000);
-    rxNostr.send({
+    rxNostr?.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} naku? ${message}`,
       tags: getTagsReply(ev),
@@ -121,7 +121,7 @@
       atari={false}
     />
   {/each}
-  {#if canRichi(cTehai, cTsumohai, isRichi, nokori)}
+  {#if nokori !== undefined && canRichi(cTehai, cTsumohai, isRichi, nokori)}
     <br /><button
       disabled={sutehaiCommand === 'richi'}
       on:click={() => {

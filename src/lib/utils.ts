@@ -192,12 +192,13 @@ export const zap = (pubkey: string, relays: string[]) => {
 };
 
 export const sendDapai = (
-  rxNostr: RxNostr,
+  rxNostr: RxNostr | undefined,
   pai: string,
   eventToReply: NostrEvent,
   sutehaiCommand: string,
   setSutehaiCommand: (v: string) => void,
 ) => {
+  if (rxNostr === undefined) return;
   const now = Math.floor(Date.now() / 1000);
   rxNostr.send({
     kind: 42,

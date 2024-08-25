@@ -23,18 +23,18 @@
   export let points: Map<string, number>;
   export let pointDiff: Map<string, string>;
   export let loginPubkey: string | undefined;
-  export let rxNostr: RxNostr;
+  export let rxNostr: RxNostr | undefined;
   export let nakuKinds: Map<string, string[] | undefined>;
   export let sutehaiSaved: string;
   export let doras: string[];
   export let sutehaiCommand: string;
   export let tsumohai: Map<string, string>;
-  export let nokori: number;
+  export let nokori: number | undefined;
   export let setSutehai: (value: string) => void;
   export let richiJunme: Map<string, number>;
   export let callSendDapai: (pai: string | undefined) => void;
   export let say: Map<string, string>;
-  export let result: string;
+  export let result: string | undefined;
   export let furoJunme: Map<string, number[]>;
   export let sutehaiPlayerSaved: string;
 

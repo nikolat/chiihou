@@ -8,7 +8,7 @@
   } from '$lib/config';
   import { getNpubWithNIP07, sleep } from '$lib/utils';
 
-  export let rxNostr: RxNostr;
+  export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string | undefined;
   export let setEnableFastForward: (value: boolean) => void;
   export let setLoginPubkey: (value: string | undefined) => void;
@@ -17,7 +17,7 @@
     message: string,
     pubkey: string = mahjongServerPubkey,
   ) => {
-    rxNostr.send({
+    rxNostr?.send({
       kind: 42,
       content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
       tags: [

@@ -3,29 +3,29 @@
   import { awayuki_mahjong_emojis } from '$lib/utils';
   import Pai from '$lib/components/Pai.svelte';
 
-  export let bafu: string;
-  export let kyoku: number;
-  export let tsumibou: number;
-  export let kyoutaku: number;
-  export let nokori: number;
-  export let dorahyoujihai: string;
-  export let uradorahyoujihai: string;
+  export let bafu: string | undefined;
+  export let kyoku: number | undefined;
+  export let tsumibou: number | undefined;
+  export let kyoutaku: number | undefined;
+  export let nokori: number | undefined;
+  export let dorahyoujihai: string | undefined;
+  export let uradorahyoujihai: string | undefined;
   export let doras: string[];
-  export let result: string;
+  export let result: string | undefined;
 </script>
 
 <p>
-  {bafu ?? '?'}{kyoku ?? '0'}局
+  {bafu ?? '?'}{kyoku ?? 0}局
   <img
     src={awayuki_mahjong_emojis.mahjong_stick100}
     alt="積み棒"
     class="pai"
-  />x{tsumibou ?? '0'}
+  />x{tsumibou ?? 0}
   <img
     src={awayuki_mahjong_emojis.mahjong_stick1000}
     alt="供託"
     class="pai"
-  />x{kyoutaku === undefined ? '0' : kyoutaku / 1000} 残り{nokori ?? 0}枚
+  />x{kyoutaku === undefined ? 0 : kyoutaku / 1000} 残り{nokori ?? 0}枚
   <br />
   {#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
       pai={p}
