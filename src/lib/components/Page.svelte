@@ -154,7 +154,7 @@
         );
         if (m === null) return;
         const command = m[1];
-        const pubkey: string | null = /^nostr:npub\w{59}$/.test(m[2])
+        const pubkey: string | null = /^nostr:npub1\w{58}$/.test(m[2])
           ? (nip19.decode(m[2].replace('nostr:', '')).data as string)
           : null;
         switch (command) {
@@ -322,7 +322,7 @@
           case 'kyokuend':
             break;
           case 'gameend':
-            const itr = ev.content.matchAll(/nostr:(npub1\w{59})\s(-?\d+)/g);
+            const itr = ev.content.matchAll(/nostr:(npub1\w{58})\s(-?\d+)/g);
             const scoremap = new Map<string, number>();
             for (const m of itr) {
               const pubkeyG = nip19.decode(m[1]).data as string;
