@@ -110,6 +110,7 @@ export const fetchEventsToReplay = (
     .pipe(uniq(flushes$))
     .subscribe((packet) => {
       events = insertEventIntoDescendingList(events, packet.event);
+      setEvents(events);
       replay([packet.event]);
     });
   rxReqB.emit({
