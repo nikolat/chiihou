@@ -538,7 +538,15 @@
       {@const profile = JSON.parse(value?.content || '{}')}
       {@const paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '')}
       {@const paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '')}
-      <dt class={lastEventsToReply.has(key) ? 'player turn' : 'player'}>
+      <dt
+        class={'player' +
+          (lastEventsToReply.has(key) && requestedCommand === 'sutehai?'
+            ? ' sutehai_turn'
+            : '') +
+          (lastEventsToReply.has(key) && requestedCommand === 'naku?'
+            ? ' naku_turn'
+            : '')}
+      >
         {kaze.get(key) ?? '?'}家
         {profile.display_name ?? ''} @{profile.name ?? ''}
         <br />
@@ -720,8 +728,11 @@
     width: 15em;
     overflow-y: auto;
   }
-  .players dt.turn {
+  .players dt.sutehai_turn {
     box-shadow: 1px 1px 5px 1px purple;
+  }
+  .players dt.naku_turn {
+    box-shadow: 1px 1px 5px 1px green;
   }
   .players dt img.player {
     float: left;
