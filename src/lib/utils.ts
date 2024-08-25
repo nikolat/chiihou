@@ -1,13 +1,18 @@
+import type { RxNostr } from 'rx-nostr';
 import type { NostrEvent } from 'nostr-tools/core';
 import { binarySearch } from 'nostr-tools/utils';
+import * as nip19 from 'nostr-tools/nip19';
 import {
   addHai,
   compareFn,
   removeHai,
   stringToArrayWithFuro,
-} from './mjlib/mj_common';
-import { getShanten } from './mjlib/mj_shanten';
-import { getKakanHai } from './mjlib/mj_ai';
+} from '$lib/mjlib/mj_common';
+import { getShanten } from '$lib/mjlib/mj_shanten';
+import { getKakanHai } from '$lib/mjlib/mj_ai';
+import { mahjongServerPubkey } from '$lib/config';
+
+export const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
 
 export function insertEventIntoDescendingList(
   sortedArray: NostrEvent[],
@@ -42,6 +47,47 @@ export const getTagsReply = (event: NostrEvent): string[][] => {
   }
   tagsReply.push(['p', event.pubkey, '']);
   return tagsReply;
+};
+
+export const getNpubWithNIP07 = async (
+  setLoginPubkey: (value: string | undefined) => void,
+): Promise<void> => {
+  const nostr = window.nostr;
+  let pubkey: string | undefined;
+  if (nostr?.getPublicKey) {
+    try {
+      pubkey = await nostr.getPublicKey();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  setLoginPubkey(pubkey);
+};
+
+export const zap = (pubkey: string, relays: string[]) => {
+  const elm = document.createElement('button') as HTMLButtonElement;
+  elm.dataset.npub = nip19.npubEncode(pubkey);
+  elm.dataset.relays = relays.join(',');
+  (window as any).nostrZap.initTarget(elm);
+  elm.dispatchEvent(new Event('click'));
+};
+
+export const sendDapai = (
+  rxNostr: RxNostr,
+  pai: string,
+  eventToReply: NostrEvent,
+  sutehaiCommand: string,
+  setSutehaiCommand: (v: string) => void,
+) => {
+  const now = Math.floor(Date.now() / 1000);
+  rxNostr.send({
+    kind: 42,
+    content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
+    tags: getTagsReply(eventToReply),
+    created_at:
+      eventToReply.created_at < now ? now : eventToReply.created_at + 1,
+  });
+  setSutehaiCommand('sutehai');
 };
 
 export const setFuro = (

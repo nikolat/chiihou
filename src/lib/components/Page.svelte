@@ -8,22 +8,26 @@
     type RxNostr,
   } from 'rx-nostr';
   import { verifier } from 'rx-nostr-crypto';
+  import { Subject } from 'rxjs';
+  import type { NostrEvent } from 'nostr-tools/pure';
+  import * as nip19 from 'nostr-tools/nip19';
   import { onMount } from 'svelte';
   import {
     defaultRelays,
     getRoboHashURL,
     linkGitHub,
-    mahjongPlayerPubkeys,
     mahjongRoomId,
     mahjongServerPubkey,
   } from '$lib/config';
   import {
     awayuki_mahjong_emojis,
-    getTagsReply,
     insertEventIntoDescendingList,
+    sendDapai,
     setAnkan,
     setFuro,
     setKakan,
+    sleep,
+    zap,
   } from '$lib/utils';
   import {
     addHai,
@@ -32,11 +36,10 @@
     stringToArrayPlain,
     stringToArrayWithFuro,
   } from '$lib/mjlib/mj_common';
-  import Pai from '$lib/components/Pai.svelte';
-  import Command from '$lib/components/Command.svelte';
-  import { nip19, type NostrEvent } from 'nostr-tools';
-  import { Subject } from 'rxjs';
   import { getShanten } from '$lib/mjlib/mj_shanten';
+  import Menu from '$lib/components/Menu.svelte';
+  import Command from '$lib/components/Command.svelte';
+  import Pai from '$lib/components/Pai.svelte';
 
   let events: NostrEvent[] = [];
   let players: Map<string, NostrEvent | undefined> = new Map<
@@ -78,73 +81,31 @@
 
   let rxNostr: RxNostr;
 
-  const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
   const sleepInterval = 500;
   let enableFastForward: boolean = false;
 
-  const getNpubWithNIP07 = async (): Promise<void> => {
-    const nostr = window.nostr;
-    let pubkey: string | undefined;
-    if (nostr?.getPublicKey) {
-      try {
-        pubkey = await nostr.getPublicKey();
-      } catch (error) {
-        console.error(error);
-        return;
-      }
-      loginPubkey = pubkey;
-    }
+  const setLoginPubkey = (value: string | undefined) => {
+    loginPubkey = value;
   };
 
-  const sendDapai = (pai: string) => {
-    if (loginPubkey === undefined) return;
-    const ev = lastEventsToReply.get(loginPubkey);
-    if (ev === undefined) return;
-    const now = Math.floor(Date.now() / 1000);
-    rxNostr.send({
-      kind: 42,
-      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
-      tags: getTagsReply(ev),
-      created_at: ev.created_at < now ? now : ev.created_at + 1,
-    });
-    sutehaiCommand = 'sutehai';
+  const setEnableFastForward = (value: boolean) => {
+    enableFastForward = value;
   };
 
-  const sendMention = (
-    message: string,
-    pubkey: string = mahjongServerPubkey,
-  ) => {
-    rxNostr.send({
-      kind: 42,
-      content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
-      tags: [
-        ['e', mahjongRoomId, '', 'root'],
-        ['p', pubkey, ''],
-      ],
-    });
-  };
-
-  const gamestartByForce = async () => {
-    enableFastForward = true;
-    sendMention('reset');
-    await sleep(200);
-    sendMention('gamestart');
-    for (let i = 0; i <= 2; i++) {
-      await sleep(200);
-      sendMention('join', mahjongPlayerPubkeys[i]);
-    }
+  const setSutehaiCommand = (value: string) => {
+    sutehaiCommand = value;
   };
 
   const setSutehai = (value: string) => {
     sutehaiCommand = value;
   };
 
-  const zap = (pubkey: string) => {
-    const elm = document.createElement('button') as HTMLButtonElement;
-    elm.dataset.npub = nip19.npubEncode(pubkey);
-    elm.dataset.relays = defaultRelays.join(',');
-    (window as any).nostrZap.initTarget(elm);
-    elm.dispatchEvent(new Event('click'));
+  const callSendDapai = (pai: string | undefined) => {
+    if (pai === undefined) return;
+    if (loginPubkey === undefined) return;
+    const ev = lastEventsToReply.get(loginPubkey);
+    if (ev === undefined) return;
+    sendDapai(rxNostr, pai, ev, sutehaiCommand, setSutehaiCommand);
   };
 
   onMount(() => {
@@ -161,11 +122,8 @@
       const event = packet.event;
       switch (event.kind) {
         case 0:
-          if (
-            !players.has(event.pubkey) ||
-            players.get(event.pubkey) === undefined ||
-            players.get(event.pubkey)!.created_at < event.created_at
-          ) {
+          const profile = players.get(event.pubkey);
+          if (profile === undefined || profile.created_at < event.created_at) {
             players.set(event.pubkey, event);
             players = players;
           }
@@ -279,8 +237,9 @@
               i++;
             }
             const p = ev.tags
-              .find((tag) => tag.length >= 2 && tag[0] === 'p')!
-              .at(1)!;
+              .find((tag) => tag.length >= 2 && tag[0] === 'p')
+              ?.at(1);
+            if (p === undefined) return;
             nakuKinds.set(p, ks);
           }
           continue;
@@ -295,8 +254,9 @@
           lastEventsToReply = new Map<string, NostrEvent>();
           requestedCommand = undefined;
           const p = ev.tags
-            .find((tag) => tag.length >= 2 && tag[0] === 'p')!
-            .at(1)!;
+            .find((tag) => tag.length >= 2 && tag[0] === 'p')
+            ?.at(1);
+          if (p === undefined) return;
           nakuKinds.set(p, undefined);
           const m = ev.content.match(
             /NOTIFY\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
@@ -414,7 +374,9 @@
               say = say;
               if (saySS === 'richi') {
                 kyoutaku += 1000;
-                points.set(pubkeySS, points.get(pubkeySS)! - 1000);
+                const point = points.get(pubkeySS);
+                if (point === undefined) return;
+                points.set(pubkeySS, point - 1000);
                 points = points;
                 richiJunme.set(
                   pubkeySS,
@@ -427,7 +389,8 @@
               const paiOpen = m[3];
               const npubO = playerNameO.replace('nostr:', '');
               const pubkeyO = nip19.decode(npubO).data as string;
-              let t = tehai.get(pubkeyO)!;
+              const t = tehai.get(pubkeyO);
+              if (t === undefined) return;
               if (paiOpen.length == 2) {
                 //加槓
                 const newTehai = setKakan(t, paiOpen);
@@ -525,90 +488,7 @@
 
 <header>
   <h1>地鳳</h1>
-  {#if loginPubkey === undefined}
-    <button on:click={getNpubWithNIP07}>NIP-07 Login</button>
-  {:else}
-    <button
-      on:click={() => {
-        loginPubkey = undefined;
-      }}>Logout</button
-    >
-    <button
-      on:click={() => {
-        enableFastForward = true;
-      }}>⏩</button
-    >
-    {nip19.npubEncode(loginPubkey)}
-    <br />
-    <button
-      on:click={() => {
-        sendMention('ping');
-      }}>Ping</button
-    >
-    <button
-      on:click={() => {
-        sendMention('help');
-      }}>Help</button
-    >
-    <button
-      on:click={() => {
-        sendMention('reset');
-      }}>Reset</button
-    >
-    <button
-      on:click={() => {
-        sendMention('gamestart');
-      }}>GameStart</button
-    >
-    <button
-      on:click={() => {
-        sendMention('join');
-      }}>Join</button
-    >
-    <button
-      on:click={() => {
-        sendMention('join', mahjongPlayerPubkeys[0]);
-      }}>Join rinrin</button
-    >
-    <button
-      on:click={() => {
-        sendMention('join', mahjongPlayerPubkeys[1]);
-      }}>Join chunchun</button
-    >
-    <button
-      on:click={() => {
-        sendMention('join', mahjongPlayerPubkeys[2]);
-      }}>Join whanwhan</button
-    >
-    <button
-      on:click={() => {
-        sendMention('status');
-      }}>Status</button
-    >
-    <button
-      on:click={() => {
-        sendMention('next');
-      }}>Next</button
-    >
-    <br />
-    <button on:click={gamestartByForce}
-      >GameStart With <img
-        class="player"
-        src="https://nikolat.github.io/avatar/rinrin.png"
-        alt="rinrin"
-      />
-      <img
-        class="player"
-        src="https://nikolat.github.io/avatar/chunchun.png"
-        alt="chunchun"
-      />
-      <img
-        class="player"
-        src="https://nikolat.github.io/avatar/whanwhan.png"
-        alt="whanwhan"
-      />
-    </button>
-  {/if}
+  <Menu {rxNostr} {loginPubkey} {setEnableFastForward} {setLoginPubkey} />
 </header>
 <main>
   <h2>Info</h2>
@@ -662,7 +542,11 @@
         {kaze.get(key) ?? '?'}家
         {profile.display_name ?? ''} @{profile.name ?? ''}
         <br />
-        <button class="zap" title="Zap!" on:click={() => zap(key)}>⚡️</button>
+        <button
+          class="zap"
+          title="Zap!"
+          on:click={() => zap(key, defaultRelays)}>⚡️</button
+        >
         {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
         <br /><img
           class="player"
@@ -686,7 +570,7 @@
               {nokori}
               {setSutehai}
               isRichi={(richiJunme.get(loginPubkey) ?? -1) >= 0}
-              {sendDapai}
+              {callSendDapai}
             />{/if}
           <br />
           {say.get(key) ? `＜ [${say.get(key)}]` : ''}
@@ -705,7 +589,7 @@
                       pai,
                     ),
                   )[0] > 0}
-                on:click={() => sendDapai(pai)}
+                on:click={() => callSendDapai(pai)}
                 ><Pai
                   {pai}
                   isDora={doras.includes(pai)}
@@ -763,7 +647,7 @@
                       tsumohai.get(key) ?? '',
                     ),
                   )[0] > 0}
-                on:click={() => sendDapai(tsumohai.get(key) ?? '')}
+                on:click={() => callSendDapai(tsumohai.get(key))}
                 ><Pai
                   pai={tsumohai.get(key) ?? ''}
                   isDora={doras.includes(tsumohai.get(key) ?? '')}
@@ -811,8 +695,10 @@
 </main>
 <footer>
   <a href={linkGitHub} target="_blank" rel="noopener noreferrer">GitHub</a>
-  <button class="zap" title="Zap!" on:click={() => zap(mahjongServerPubkey)}
-    >⚡️</button
+  <button
+    class="zap"
+    title="Zap!"
+    on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button
   >
   牌画像 (c)
   <a

@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { mahjongServerPubkey } from '$lib/config';
-  import { canRichi, getChiMaterial, getKakanHai } from '$lib/mjlib/mj_ai';
-  import { canTsumo, getAnkanHai, getTagsReply } from '$lib/utils';
-  import { nip19, type NostrEvent } from 'nostr-tools';
   import type { RxNostr } from 'rx-nostr';
-  import Pai from '$lib/components/Pai.svelte';
+  import type { NostrEvent } from 'nostr-tools/pure';
+  import * as nip19 from 'nostr-tools/nip19';
+  import { mahjongServerPubkey } from '$lib/config';
+  import { canTsumo, getAnkanHai, getTagsReply } from '$lib/utils';
   import { addHai } from '$lib/mjlib/mj_common';
+  import { canRichi, getChiMaterial, getKakanHai } from '$lib/mjlib/mj_ai';
+  import Pai from '$lib/components/Pai.svelte';
 
   export let isNakuTurn: boolean;
   export let lastEventsToReply: Map<string, NostrEvent>;
@@ -21,7 +22,7 @@
   export let nokori: number;
   export let setSutehai: (value: string) => void;
   export let isRichi: boolean;
-  export let sendDapai: (pai: string) => void;
+  export let callSendDapai: (pai: string | undefined) => void;
 
   const sendReply = (message: string) => {
     const ev = lastEventsToReply.get(loginPubkey);
@@ -94,7 +95,7 @@
     <br /><button
       on:click={() => {
         setSutehai('ankan');
-        sendDapai(h);
+        callSendDapai(h);
       }}>ankan</button
     ><Pai pai={h} isDora={doras.includes(h)} isRemoved={false} hide={false} />
   {/each}
@@ -102,7 +103,7 @@
     <br /><button
       on:click={() => {
         setSutehai('kakan');
-        sendDapai(h);
+        callSendDapai(h);
       }}>kakan</button
     ><Pai pai={h} isDora={doras.includes(h)} isRemoved={false} hide={false} />
   {/each}
@@ -118,7 +119,7 @@
     <br /><button
       on:click={() => {
         setSutehai('tsumo');
-        sendDapai('');
+        callSendDapai('');
       }}>tsumo</button
     >
   {/if}
