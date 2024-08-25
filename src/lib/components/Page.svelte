@@ -510,11 +510,13 @@
         isDora={doras.includes(p)}
         isRemoved={false}
         hide={false}
+        atari={false}
       />{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
         pai={p}
         isDora={false}
         isRemoved={false}
         hide={true}
+        atari={false}
       />{/each}
     {#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
       <br />
@@ -523,11 +525,13 @@
           isDora={doras.includes(p)}
           isRemoved={false}
           hide={false}
+          atari={false}
         />{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
           pai={p}
           isDora={false}
           isRemoved={false}
           hide={true}
+          atari={false}
         />{/each}
     {/if}
   </p>
@@ -605,6 +609,7 @@
                   hide={loginPubkey !== undefined &&
                     loginPubkey !== key &&
                     result === ''}
+                  atari={false}
                 /></button
               >
             {:else}
@@ -615,6 +620,7 @@
                 hide={loginPubkey !== undefined &&
                   loginPubkey !== key &&
                   result === ''}
+                atari={false}
               />
             {/if}
           {/each}
@@ -627,6 +633,7 @@
                 isDora={doras.includes(p)}
                 isRemoved={false}
                 hide={false}
+                atari={false}
               />
             {/each}
             &gt;
@@ -640,6 +647,7 @@
                 isDora={doras.includes(p)}
                 isRemoved={false}
                 hide={false}
+                atari={false}
               />
             {/each}
             )
@@ -663,6 +671,7 @@
                   hide={loginPubkey !== undefined &&
                     loginPubkey !== key &&
                     result === ''}
+                  atari={false}
                 /></button
               >
             {:else}
@@ -673,6 +682,7 @@
                 hide={loginPubkey !== undefined &&
                   loginPubkey !== key &&
                   result === ''}
+                atari={false}
               />
             {/if}
           {/if}
@@ -688,6 +698,9 @@
               isDora={doras.includes(p)}
               isRemoved={furoJunme.get(key)?.includes(i) ?? false}
               hide={false}
+              atari={Array.from(say.values()).some((s) => s === 'ron') &&
+                sutehaiPlayerSaved === key &&
+                i === paigazouSutehai.length - 1}
             />{/each}
         </div>
       </dd>

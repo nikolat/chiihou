@@ -5,10 +5,14 @@
   export let isDora: boolean;
   export let isRemoved: boolean;
   export let hide: boolean;
+  export let atari: boolean;
 </script>
 
 <img
-  class={'pai' + (isDora ? ' dora' : '') + (isRemoved ? ' removed' : '')}
+  class={'pai' +
+    (isDora ? ' dora' : '') +
+    (isRemoved ? ' removed' : '') +
+    (atari ? ' atari' : '')}
   alt={pai}
   src={getEmojiUrl(hide ? 'back' : pai)}
 />
@@ -19,6 +23,9 @@
   }
   .dora {
     box-shadow: 1px 1px 1px 1px yellow;
+  }
+  .atari {
+    box-shadow: 1px 1px 1px 1px red;
   }
   .removed {
     opacity: 0.25;

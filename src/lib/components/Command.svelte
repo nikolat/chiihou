@@ -64,11 +64,13 @@
         isDora={doras.includes(pai1)}
         isRemoved={false}
         hide={false}
+        atari={false}
       /><Pai
         pai={pai2}
         isDora={doras.includes(pai2)}
         isRemoved={false}
         hide={false}
+        atari={false}
       />
     {/each}
   {/if}
@@ -97,7 +99,13 @@
         setSutehai('ankan');
         callSendDapai(h);
       }}>ankan</button
-    ><Pai pai={h} isDora={doras.includes(h)} isRemoved={false} hide={false} />
+    ><Pai
+      pai={h}
+      isDora={doras.includes(h)}
+      isRemoved={false}
+      hide={false}
+      atari={false}
+    />
   {/each}
   {#each getKakanHai(addHai(cTehai, cTsumohai)) as h}
     <br /><button
@@ -105,7 +113,13 @@
         setSutehai('kakan');
         callSendDapai(h);
       }}>kakan</button
-    ><Pai pai={h} isDora={doras.includes(h)} isRemoved={false} hide={false} />
+    ><Pai
+      pai={h}
+      isDora={doras.includes(h)}
+      isRemoved={false}
+      hide={false}
+      atari={false}
+    />
   {/each}
   {#if canRichi(cTehai, cTsumohai, isRichi, nokori)}
     <br /><button
