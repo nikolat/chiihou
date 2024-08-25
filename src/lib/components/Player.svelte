@@ -202,7 +202,7 @@
     {#each paigazouSutehai as p, i}{#if richiJunme.get(key) === i}<img
           src={awayuki_mahjong_emojis.mahjong_stick1000}
           alt=""
-          class="pai"
+          class="pai richi"
         />{/if}{#if [6, 12].includes(i)}<br />{/if}<Pai
         pai={p}
         isDora={doras.includes(p)}
@@ -218,6 +218,10 @@
 <style>
   .pai {
     height: 30px;
+  }
+  .richi {
+    margin: auto 3px;
+    box-shadow: 1px 1px 1px 1px orange;
   }
   dt {
     height: 130px;
