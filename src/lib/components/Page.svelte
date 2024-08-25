@@ -51,6 +51,7 @@
   let dorahyoujihai: string | undefined;
   let uradorahyoujihai: string | undefined;
   let result: string | undefined;
+  let pubkeysToOpenTehai: Set<string> = new Set<string>();
   let sutehaiSaved: string = '';
   let sutehaiPlayerSaved: string = '';
   let sutehaiCommand: string = '';
@@ -153,6 +154,9 @@
         );
         if (m === null) return;
         const command = m[1];
+        const pubkey: string | null = /^nostr:npub\w{59}$/.test(m[2])
+          ? (nip19.decode(m[2].replace('nostr:', '')).data as string)
+          : null;
         switch (command) {
           case 'gamestart':
             const p = ev.tags
@@ -181,6 +185,7 @@
             uradorahyoujihai = '';
             sutehaiCommand = 'sutehai';
             result = '';
+            pubkeysToOpenTehai = new Set<string>();
             const idx = sekijun.indexOf(oya);
             kyoku = idx + 1;
             kaze.set(sekijun[idx], '東');
@@ -190,11 +195,9 @@
             kaze = kaze;
             break;
           case 'point':
-            const playerName = m[2];
+            if (pubkey === null) return;
             const sign = m[3];
             const point = parseInt(m[4]);
-            const npub = playerName.replace('nostr:', '');
-            const pubkey = nip19.decode(npub).data as string;
             if (sign === '=') {
               points.set(pubkey, point);
               points = points;
@@ -204,11 +207,9 @@
             }
             break;
           case 'haipai':
-            const playerNameH = m[2];
+            if (pubkey === null) return;
             const haipai = m[3];
-            const npubH = playerNameH.replace('nostr:', '');
-            const pubkeyH = nip19.decode(npubH).data as string;
-            tehai.set(pubkeyH, haipai);
+            tehai.set(pubkey, haipai);
             tehai = tehai;
             break;
           case 'dora':
@@ -223,79 +224,71 @@
             }
             break;
           case 'tsumo':
-            const playerNameT = m[2];
+            if (pubkey === null) return;
             nokori = parseInt(m[3]);
             const paiT = m[4];
-            const npubT = playerNameT.replace('nostr:', '');
-            const pubkeyT = nip19.decode(npubT).data as string;
-            tsumohai.set(pubkeyT, paiT);
+            tsumohai.set(pubkey, paiT);
             tsumohai = tsumohai;
-            say.set(pubkeyT, '');
+            say.set(pubkey, '');
             say = say;
             sutehaiSaved = '';
             sutehaiPlayerSaved = '';
             break;
           case 'sutehai':
-            const playerNameS = m[2];
+            if (pubkey === null) return;
             const paiS = m[3];
-            const npubS = playerNameS.replace('nostr:', '');
-            const pubkeyS = nip19.decode(npubS).data as string;
             let newTehai = addHai(
-              tehai.get(pubkeyS) ?? '',
-              tsumohai.get(pubkeyS) ?? '',
+              tehai.get(pubkey) ?? '',
+              tsumohai.get(pubkey) ?? '',
             );
             newTehai = removeHai(newTehai, paiS);
-            tehai.set(pubkeyS, newTehai);
-            tsumohai.set(pubkeyS, '');
-            sutehai.set(pubkeyS, (sutehai.get(pubkeyS) ?? '') + paiS);
+            tehai.set(pubkey, newTehai);
+            tsumohai.set(pubkey, '');
+            sutehai.set(pubkey, (sutehai.get(pubkey) ?? '') + paiS);
             tehai = tehai;
             tsumohai = tsumohai;
             sutehai = sutehai;
             sutehaiSaved = paiS;
-            sutehaiPlayerSaved = pubkeyS;
+            sutehaiPlayerSaved = pubkey;
             break;
           case 'say':
-            const playerNameSS = m[2];
+            if (pubkey === null) return;
             const saySS = m[3];
-            const npubSS = playerNameSS.replace('nostr:', '');
-            const pubkeySS = nip19.decode(npubSS).data as string;
-            say.set(pubkeySS, saySS);
+            say.set(pubkey, saySS);
             say = say;
             if (saySS === 'richi') {
               if (kyoutaku === undefined) return;
-              const point = points.get(pubkeySS);
+              const point = points.get(pubkey);
               if (point === undefined) return;
               kyoutaku += 1000;
-              points.set(pubkeySS, point - 1000);
+              points.set(pubkey, point - 1000);
               points = points;
-              richiJunme.set(
-                pubkeySS,
-                (sutehai.get(pubkeySS)?.length ?? 0) / 2,
-              );
+              richiJunme.set(pubkey, (sutehai.get(pubkey)?.length ?? 0) / 2);
+            } else if (saySS === 'tenpai') {
+              pubkeysToOpenTehai.add(pubkey);
+              pubkeysToOpenTehai = pubkeysToOpenTehai;
             }
             break;
           case 'open':
-            const playerNameO = m[2];
+            if (pubkey === null) return;
             const paiOpen = m[3];
-            const npubO = playerNameO.replace('nostr:', '');
-            const pubkeyO = nip19.decode(npubO).data as string;
-            const t = tehai.get(pubkeyO);
+            const t = tehai.get(pubkey);
             if (t === undefined) return;
             if (paiOpen.length == 2) {
               //加槓
               const newTehai = setKakan(t, paiOpen);
-              tehai.set(pubkeyO, newTehai);
+              tehai.set(pubkey, newTehai);
             } else {
               if (sutehaiSaved === '') {
                 //暗槓
                 const pai = paiOpen.slice(0, 2);
                 const newTehai = setAnkan(t, pai);
-                tehai.set(pubkeyO, newTehai);
+                tehai.set(pubkey, newTehai);
               } else {
                 //チー、ポン、大明槓
                 const opened = paiOpen.replace(sutehaiSaved, '');
                 const newTehai = setFuro(t, sutehaiSaved, opened);
-                tehai.set(pubkeyO, newTehai);
+                tehai.set(pubkey, newTehai);
                 furoJunme.set(
                   sutehaiPlayerSaved,
                   (furoJunme.get(sutehaiPlayerSaved) ?? []).concat(
@@ -308,7 +301,7 @@
             tehai = tehai;
             break;
           case 'agari':
-            const playerNameA = m[2];
+            if (pubkey === null) return;
             const fu = m[3];
             const m2 = ev.content.match(/NOTIFY\s\S+\s\S+\s\S+\s(.+)$/);
             let r = '';
@@ -320,6 +313,8 @@
             }
             r += `${fu}符${c}翻`;
             result = r;
+            pubkeysToOpenTehai.add(pubkey);
+            pubkeysToOpenTehai = pubkeysToOpenTehai;
             break;
           case 'ryukyoku':
             result = '流局';
@@ -327,7 +322,7 @@
           case 'kyokuend':
             break;
           case 'gameend':
-            const itr = ev.content.matchAll(/nostr:(npub1\w+)\s(-?\d+)/g);
+            const itr = ev.content.matchAll(/nostr:(npub1\w{59})\s(-?\d+)/g);
             const scoremap = new Map<string, number>();
             for (const m of itr) {
               const pubkeyG = nip19.decode(m[1]).data as string;
@@ -409,7 +404,7 @@
         {richiJunme}
         {callSendDapai}
         {say}
-        {result}
+        {pubkeysToOpenTehai}
         {furoJunme}
         {sutehaiPlayerSaved}
       />

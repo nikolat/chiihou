@@ -34,7 +34,7 @@
   export let richiJunme: Map<string, number>;
   export let callSendDapai: (pai: string | undefined) => void;
   export let say: Map<string, string>;
-  export let result: string | undefined;
+  export let pubkeysToOpenTehai: Set<string>;
   export let furoJunme: Map<string, number[]>;
   export let sutehaiPlayerSaved: string;
 
@@ -115,7 +115,7 @@
             isRemoved={false}
             hide={loginPubkey !== undefined &&
               loginPubkey !== key &&
-              result === ''}
+              !pubkeysToOpenTehai.has(key)}
             atari={false}
           /></button
         >
@@ -126,7 +126,7 @@
           isRemoved={false}
           hide={loginPubkey !== undefined &&
             loginPubkey !== key &&
-            result === ''}
+            !pubkeysToOpenTehai.has(key)}
           atari={false}
         />
       {/if}
@@ -177,7 +177,7 @@
             isRemoved={false}
             hide={loginPubkey !== undefined &&
               loginPubkey !== key &&
-              result === ''}
+              !pubkeysToOpenTehai.has(key)}
             atari={false}
           /></button
         >
@@ -188,7 +188,7 @@
           isRemoved={false}
           hide={loginPubkey !== undefined &&
             loginPubkey !== key &&
-            result === ''}
+            !pubkeysToOpenTehai.has(key)}
           atari={false}
         />
       {/if}
