@@ -10,7 +10,7 @@
 
 <img
   class={'pai' +
-    (isDora ? ' dora' : '') +
+    (isDora && !hide ? ' dora' : '') +
     (isRemoved ? ' removed' : '') +
     (atari ? ' atari' : '')}
   alt={pai}
