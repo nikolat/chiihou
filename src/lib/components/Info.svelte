@@ -31,14 +31,16 @@
       pai={p}
       isDora={doras.includes(p)}
       isRemoved={false}
-      hide={false}
-      atari={false}
+      isNaku={false}
+      isAtari={false}
+      isHidden={false}
     />{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
       pai={p}
       isDora={false}
       isRemoved={false}
-      hide={true}
-      atari={false}
+      isNaku={false}
+      isAtari={false}
+      isHidden={false}
     />{/each}
   {#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
     <br />
@@ -46,14 +48,16 @@
         pai={p}
         isDora={doras.includes(p)}
         isRemoved={false}
-        hide={false}
-        atari={false}
+        isNaku={false}
+        isAtari={false}
+        isHidden={false}
       />{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
         pai={p}
         isDora={false}
         isRemoved={false}
-        hide={true}
-        atari={false}
+        isNaku={false}
+        isAtari={false}
+        isHidden={false}
       />{/each}
   {/if}
 </p>

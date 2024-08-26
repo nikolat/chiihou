@@ -45,10 +45,6 @@
     loginPubkey !== undefined &&
     lastEventsToReply.has(loginPubkey) &&
     requestedCommand === 'sutehai?';
-  $: isNakuTurn =
-    loginPubkey !== undefined &&
-    lastEventsToReply.has(loginPubkey) &&
-    requestedCommand === 'naku?';
 </script>
 
 <dt
@@ -78,7 +74,7 @@
   />
   <div class="command">
     {#if loginPubkey !== undefined && loginPubkey === key}<Command
-        {isNakuTurn}
+        {requestedCommand}
         {lastEventsToReply}
         {rxNostr}
         {loginPubkey}
@@ -116,10 +112,11 @@
             {pai}
             isDora={doras.includes(pai)}
             isRemoved={false}
-            hide={loginPubkey !== undefined &&
+            isNaku={false}
+            isAtari={false}
+            isHidden={loginPubkey !== undefined &&
               loginPubkey !== key &&
               !pubkeysToOpenTehai.has(key)}
-            atari={false}
           /></button
         >
       {:else}
@@ -127,10 +124,11 @@
           {pai}
           isDora={doras.includes(pai)}
           isRemoved={false}
-          hide={loginPubkey !== undefined &&
+          isNaku={false}
+          isAtari={false}
+          isHidden={loginPubkey !== undefined &&
             loginPubkey !== key &&
             !pubkeysToOpenTehai.has(key)}
-          atari={false}
         />
       {/if}
     {/each}
@@ -142,8 +140,9 @@
           pai={p}
           isDora={doras.includes(p)}
           isRemoved={false}
-          hide={false}
-          atari={false}
+          isNaku={false}
+          isAtari={false}
+          isHidden={false}
         />
       {/each}
       &gt;
@@ -156,8 +155,9 @@
           pai={p}
           isDora={doras.includes(p)}
           isRemoved={false}
-          hide={false}
-          atari={false}
+          isNaku={false}
+          isAtari={false}
+          isHidden={false}
         />
       {/each}
       )
@@ -178,10 +178,11 @@
             pai={tsumohai.get(key) ?? ''}
             isDora={doras.includes(tsumohai.get(key) ?? '')}
             isRemoved={false}
-            hide={loginPubkey !== undefined &&
+            isNaku={false}
+            isAtari={false}
+            isHidden={loginPubkey !== undefined &&
               loginPubkey !== key &&
               !pubkeysToOpenTehai.has(key)}
-            atari={false}
           /></button
         >
       {:else}
@@ -189,10 +190,11 @@
           pai={tsumohai.get(key) ?? ''}
           isDora={doras.includes(tsumohai.get(key) ?? '')}
           isRemoved={false}
-          hide={loginPubkey !== undefined &&
+          isNaku={false}
+          isAtari={false}
+          isHidden={loginPubkey !== undefined &&
             loginPubkey !== key &&
             !pubkeysToOpenTehai.has(key)}
-          atari={false}
         />
       {/if}
     {/if}
@@ -207,10 +209,15 @@
         pai={p}
         isDora={doras.includes(p)}
         isRemoved={furoJunme.get(key)?.includes(i) ?? false}
-        hide={false}
-        atari={Array.from(say.values()).some((s) => s === 'ron') &&
+        isNaku={requestedCommand === 'naku?' &&
+          sutehaiPlayerSaved === key &&
+          i === paigazouSutehai.length - 1 &&
+          (loginPubkey === undefined ||
+            (loginPubkey !== undefined && lastEventsToReply.has(loginPubkey)))}
+        isAtari={Array.from(say.values()).some((s) => s === 'ron') &&
           sutehaiPlayerSaved === key &&
           i === paigazouSutehai.length - 1}
+        isHidden={false}
       />{/each}
   </div>
 </dd>

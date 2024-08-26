@@ -8,7 +8,7 @@
   import { canRichi, getChiMaterial, getKakanHai } from '$lib/mjlib/mj_ai';
   import Pai from '$lib/components/Pai.svelte';
 
-  export let isNakuTurn: boolean;
+  export let requestedCommand: string | undefined;
   export let lastEventsToReply: Map<string, NostrEvent>;
   export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string;
@@ -35,6 +35,11 @@
       created_at: ev.created_at < now ? now : ev.created_at + 1,
     });
   };
+
+  $: isNakuTurn =
+    loginPubkey !== undefined &&
+    lastEventsToReply.has(loginPubkey) &&
+    requestedCommand === 'naku?';
 </script>
 
 {#if isNakuTurn}
@@ -63,14 +68,16 @@
         pai={pai1}
         isDora={doras.includes(pai1)}
         isRemoved={false}
-        hide={false}
-        atari={false}
+        isNaku={false}
+        isAtari={false}
+        isHidden={false}
       /><Pai
         pai={pai2}
         isDora={doras.includes(pai2)}
         isRemoved={false}
-        hide={false}
-        atari={false}
+        isNaku={false}
+        isAtari={false}
+        isHidden={false}
       />
     {/each}
   {/if}
@@ -103,8 +110,9 @@
       pai={h}
       isDora={doras.includes(h)}
       isRemoved={false}
-      hide={false}
-      atari={false}
+      isNaku={false}
+      isAtari={false}
+      isHidden={false}
     />
   {/each}
   {#each getKakanHai(addHai(cTehai, cTsumohai)) as h}
@@ -117,8 +125,9 @@
       pai={h}
       isDora={doras.includes(h)}
       isRemoved={false}
-      hide={false}
-      atari={false}
+      isNaku={false}
+      isAtari={false}
+      isHidden={false}
     />
   {/each}
   {#if nokori !== undefined && canRichi(cTehai, cTsumohai, isRichi, nokori)}
