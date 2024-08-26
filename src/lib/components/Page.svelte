@@ -99,7 +99,7 @@
     fetchEventsToReplay(rxNostr, setEvents, replay, sleepInterval);
   });
 
-  const replay = async (events: NostrEvent[], sleepInterval?: number) => {
+  const replay = async (events: NostrEvent[], sInterval?: number) => {
     for (const ev of events) {
       if (ev.content.includes('GET')) {
         const p = ev.tags
@@ -116,7 +116,7 @@
         requestedCommand = command;
         if (command === 'naku?') {
           let i = 2;
-          const ks = [];
+          const ks: string[] = [];
           while (m[i] !== undefined) {
             ks.push(m[i]);
             i++;
@@ -131,11 +131,11 @@
       }
       if (ev.content.includes('NOTIFY')) {
         if (
-          sleepInterval !== undefined &&
+          sInterval !== undefined &&
           !enableFastForward &&
           !/gamestart|kyokustart|point/.test(ev.content)
         )
-          await sleep(sleepInterval);
+          await sleep(sInterval);
         lastEventsToReply = new Map<string, NostrEvent>();
         requestedCommand = undefined;
         const p = ev.tags
@@ -268,6 +268,7 @@
               points.set(pubkey, point - 1000);
               points = points;
               richiJunme.set(pubkey, (sutehai.get(pubkey)?.length ?? 0) / 2);
+              richiJunme = richiJunme;
             } else if (saySS === 'tenpai') {
               pubkeysToOpenTehai.add(pubkey);
               pubkeysToOpenTehai = pubkeysToOpenTehai;
