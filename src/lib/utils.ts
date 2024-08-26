@@ -21,34 +21,19 @@ import { mahjongRoomId, mahjongServerPubkey } from '$lib/config';
 
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
-  players: Map<string, NostrEvent | undefined>,
-  events: NostrEvent[],
+  setEvents: (value: NostrEvent[]) => void,
   replay: (events: NostrEvent[], sleepInterval?: number) => Promise<void>,
   sleepInterval: number,
-  setPlayers: (value: Map<string, NostrEvent | undefined>) => void,
-  setEvents: (value: NostrEvent[]) => void,
 ) => {
+  let events: NostrEvent[] = [];
   const rxReqB = createRxBackwardReq();
   const rxReqF = createRxForwardReq();
   const now = Math.floor(Date.now() / 1000);
   const flushes$ = new Subject<void>();
   const next = (packet: EventPacket) => {
     const event = packet.event;
-    switch (event.kind) {
-      case 0:
-        const profile = players.get(event.pubkey);
-        if (profile === undefined || profile.created_at < event.created_at) {
-          players.set(event.pubkey, event);
-          setPlayers(players);
-        }
-        break;
-      case 42:
-        events = insertEventIntoDescendingList(events, event);
-        setEvents(events);
-        break;
-      default:
-        break;
-    }
+    events = insertEventIntoDescendingList(events, event);
+    setEvents(events);
   };
   const complete1 = async () => {
     const lastKyokuStartEvent = events.find((ev) =>
@@ -60,34 +45,19 @@ export const fetchEventsToReplay = (
       console.warn('#kyokustart is not found');
       return;
     }
-    players = new Map<string, NostrEvent>();
-    const pubkeys = lastKyokuStartEvent.tags
-      .filter((tag) => tag.length >= 2 && tag[0] === 'p')
-      .map((tag) => tag[1]);
-    for (const pubkey of pubkeys) {
-      players.set(pubkey, undefined);
-      setPlayers(players);
-    }
     const rxReqB2 = createRxBackwardReq();
     const subscriptionB2 = rxNostr
       .use(rxReqB2)
       .pipe(uniq(flushes$))
-      .subscribe(next);
-    rxReqB2.emit({ kinds: [0], authors: pubkeys, until: now });
-    rxReqB2.over();
-    const rxReqB3 = createRxBackwardReq();
-    const subscriptionB3 = rxNostr
-      .use(rxReqB3)
-      .pipe(uniq(flushes$))
       .subscribe({ next, complete: complete2 });
-    rxReqB3.emit({
+    rxReqB2.emit({
       kinds: [42],
       authors: [mahjongServerPubkey],
       '#e': [mahjongRoomId],
       since: lastKyokuStartEvent.created_at - 1,
       until: now,
     });
-    rxReqB3.over();
+    rxReqB2.over();
   };
   const complete2 = async () => {
     const isKyokuEnd = events.some((ev) =>
@@ -128,6 +98,33 @@ export const fetchEventsToReplay = (
     '#t': ['kyokustart'],
     limit: 1,
     until: now,
+  });
+  rxReqB.over();
+};
+
+export const fetchProfiles = (
+  rxNostr: RxNostr,
+  players: Map<string, NostrEvent | undefined>,
+  setPlayers: (value: Map<string, NostrEvent | undefined>) => void,
+) => {
+  const next = (packet: EventPacket) => {
+    const event = packet.event;
+    const profile = players.get(event.pubkey);
+    if (profile === undefined || profile.created_at < event.created_at) {
+      players.set(event.pubkey, event);
+      setPlayers(players);
+    }
+  };
+  const flushes$ = new Subject<void>();
+  const rxReqB = createRxBackwardReq();
+  const subscriptionB = rxNostr
+    .use(rxReqB)
+    .pipe(uniq(flushes$))
+    .subscribe(next);
+  rxReqB.emit({
+    kinds: [0],
+    authors: Array.from(players.keys()),
+    until: Math.floor(Date.now() / 1000),
   });
   rxReqB.over();
 };

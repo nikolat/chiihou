@@ -7,6 +7,7 @@
   import { defaultRelays, linkGitHub, mahjongServerPubkey } from '$lib/config';
   import {
     fetchEventsToReplay,
+    fetchProfiles,
     sendDapai,
     setAnkan,
     setFuro,
@@ -64,6 +65,7 @@
   let rxNostr: RxNostr | undefined;
   const sleepInterval = 500;
   let enableFastForward: boolean = false;
+  let isGameStarted: boolean = false;
 
   const setLoginPubkey = (value: string | undefined) => {
     loginPubkey = value;
@@ -94,15 +96,7 @@
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
-    fetchEventsToReplay(
-      rxNostr,
-      players,
-      events,
-      replay,
-      sleepInterval,
-      setPlayers,
-      setEvents,
-    );
+    fetchEventsToReplay(rxNostr, setEvents, replay, sleepInterval);
   });
 
   const replay = async (events: NostrEvent[], sleepInterval?: number) => {
@@ -139,7 +133,7 @@
         if (
           sleepInterval !== undefined &&
           !enableFastForward &&
-          !/gamestart|point/.test(ev.content)
+          !/gamestart|kyokustart|point/.test(ev.content)
         )
           await sleep(sleepInterval);
         lastEventsToReply = new Map<string, NostrEvent>();
@@ -163,6 +157,16 @@
               .find((tag) => tag.length >= 2 && tag[0] === 'p')
               ?.at(1);
             if (p === undefined) return;
+            if (isGameStarted) {
+              players.set(p, undefined);
+              if (players.size === 4) {
+                fetchProfiles(rxNostr!, players, setPlayers);
+              }
+            } else {
+              isGameStarted = true;
+              players = new Map<string, NostrEvent>();
+              players.set(p, undefined);
+            }
             const mG = ev.content.match(/NOTIFY\sgamestart\s(東|南|西|北)/);
             if (mG === null) return;
             const seki: number = ['東', '南', '西', '北'].indexOf(mG[1]);
@@ -341,6 +345,7 @@
               i++;
             }
             result = r2.join('\n');
+            isGameStarted = false;
             break;
           default:
             break;
