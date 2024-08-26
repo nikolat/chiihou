@@ -6,8 +6,11 @@
   import { onMount } from 'svelte';
   import { defaultRelays, linkGitHub, mahjongServerPubkey } from '$lib/config';
   import {
+    canAnkan,
+    canTsumo,
     fetchEventsToReplay,
     fetchProfiles,
+    RxReqMode,
     sendDapai,
     setAnkan,
     setFuro,
@@ -99,7 +102,11 @@
     fetchEventsToReplay(rxNostr, setEvents, replay, sleepInterval);
   });
 
-  const replay = async (events: NostrEvent[], sInterval?: number) => {
+  const replay = async (
+    events: NostrEvent[],
+    mode: RxReqMode,
+    sInterval?: number,
+  ) => {
     for (const ev of events) {
       if (ev.content.includes('GET')) {
         const p = ev.tags
@@ -126,6 +133,24 @@
             ?.at(1);
           if (p === undefined) return;
           nakuKinds.set(p, ks);
+        } else if (command === 'sutehai?') {
+          //リーチ済
+          if (p === loginPubkey && richiJunme.get(p) !== undefined) {
+            const cTehai = tehai.get(loginPubkey)!;
+            const cTsumohai = tsumohai.get(loginPubkey)!;
+            if (
+              !(
+                canTsumo(cTehai, cTsumohai) ||
+                canAnkan(cTehai, cTsumohai, nokori ?? 0)
+              )
+            ) {
+              //オートで自摸切り
+              if (mode === RxReqMode.Forward) {
+                await sleep(sleepInterval);
+                callSendDapai(cTsumohai);
+              }
+            }
+          }
         }
         continue;
       }

@@ -19,10 +19,19 @@ import { getShanten } from '$lib/mjlib/mj_shanten';
 import { getKakanHai } from '$lib/mjlib/mj_ai';
 import { mahjongRoomId, mahjongServerPubkey } from '$lib/config';
 
+export const enum RxReqMode {
+  Backward,
+  Forward,
+}
+
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
   setEvents: (value: NostrEvent[]) => void,
-  replay: (events: NostrEvent[], sleepInterval?: number) => Promise<void>,
+  replay: (
+    events: NostrEvent[],
+    mode: RxReqMode,
+    sleepInterval?: number,
+  ) => Promise<void>,
   sleepInterval: number,
 ) => {
   let events: NostrEvent[] = [];
@@ -63,7 +72,11 @@ export const fetchEventsToReplay = (
     const isKyokuEnd = events.some((ev) =>
       ev.content.includes('NOTIFY kyokuend'),
     );
-    await replay(events.toReversed(), isKyokuEnd ? sleepInterval : 0);
+    await replay(
+      events.toReversed(),
+      RxReqMode.Backward,
+      isKyokuEnd ? sleepInterval : 0,
+    );
     rxReqF.emit({
       kinds: [42],
       authors: [mahjongServerPubkey],
@@ -81,7 +94,7 @@ export const fetchEventsToReplay = (
     .subscribe((packet) => {
       events = insertEventIntoDescendingList(events, packet.event);
       setEvents(events);
-      replay([packet.event]);
+      replay([packet.event], RxReqMode.Forward);
     });
   rxReqB.emit({
     kinds: [42],
