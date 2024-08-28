@@ -49,6 +49,7 @@
     }}>Logout</button
   >
   <button
+    title="早送り"
     on:click={() => {
       setEnableFastForward(true);
     }}>⏩</button

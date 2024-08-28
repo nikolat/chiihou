@@ -427,59 +427,67 @@
   <Menu {rxNostr} {loginPubkey} {setEnableFastForward} {setLoginPubkey} />
 </header>
 <main>
-  <h2>Info</h2>
-  <Info
-    {bafu}
-    {kyoku}
-    {tsumibou}
-    {kyoutaku}
-    {nokori}
-    {dorahyoujihai}
-    {uradorahyoujihai}
-    {doras}
-    {result}
-  />
-  <h2>Players</h2>
-  <dl class="players">
-    {#each Array.from(players.entries()) as [key, value]}
-      <Player
-        {key}
-        {value}
-        {sekijun}
-        {tehai}
-        {sutehai}
-        {lastEventsToReply}
-        {requestedCommand}
-        {kaze}
-        {points}
-        {pointDiff}
-        {loginPubkey}
-        {rxNostr}
-        {nakuKinds}
-        {sutehaiSaved}
-        {doras}
-        {sutehaiCommand}
-        {tsumohai}
-        {nokori}
-        {setSutehai}
-        {richiJunme}
-        {callSendDapai}
-        {say}
-        {pubkeysToOpenTehai}
-        {furoJunme}
-        {furoHistory}
-        {kakanHistory}
-        {sutehaiPlayerSaved}
-      />
-    {/each}
-  </dl>
-  <h2 id="log">Log</h2>
-  <dl class="log">
-    {#each events as event}
-      <dt><time>{new Date(1000 * event.created_at).toLocaleString()}</time></dt>
-      <dd>{event.content}</dd>
-    {/each}
-  </dl>
+  <section id="info">
+    <h2>Info</h2>
+    <Info
+      {bafu}
+      {kyoku}
+      {tsumibou}
+      {kyoutaku}
+      {nokori}
+      {dorahyoujihai}
+      {uradorahyoujihai}
+      {doras}
+      {result}
+    />
+  </section>
+  <section id="players">
+    <h2>Players</h2>
+    <dl class="players">
+      {#each Array.from(players.entries()) as [key, value]}
+        <Player
+          {key}
+          {value}
+          {sekijun}
+          {tehai}
+          {sutehai}
+          {lastEventsToReply}
+          {requestedCommand}
+          {kaze}
+          {points}
+          {pointDiff}
+          {loginPubkey}
+          {rxNostr}
+          {nakuKinds}
+          {sutehaiSaved}
+          {doras}
+          {sutehaiCommand}
+          {tsumohai}
+          {nokori}
+          {setSutehai}
+          {richiJunme}
+          {callSendDapai}
+          {say}
+          {pubkeysToOpenTehai}
+          {furoJunme}
+          {furoHistory}
+          {kakanHistory}
+          {sutehaiPlayerSaved}
+        />
+      {/each}
+    </dl>
+  </section>
+  <section id="log" class={loginPubkey === undefined ? '' : 'hidden'}>
+    <h2>Log</h2>
+    <dl class="log">
+      {#each events as event}
+        <dt>
+          <time>{new Date(1000 * event.created_at).toLocaleString()}</time>
+        </dt>
+        <dd>{event.content}</dd>
+      {/each}
+    </dl>
+  </section>
 </main>
 <footer>
   <a href={linkGitHub} target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -497,6 +505,9 @@
 </footer>
 
 <style>
+  .hidden {
+    display: none;
+  }
   .log {
     border: 1px gray solid;
     height: 10em;
