@@ -172,21 +172,19 @@
     {/each}
     {#each paigazouTehai?.at(2) ?? [] as pai}
       {@const pa = stringToArrayPlain(pai)}
-      (
-      {#each pa as p}
+      {#each pa as p, i}
         <Pai
           pai={p}
           isDora={doras.includes(p)}
           isRemoved={false}
           isNaku={false}
           isAtari={false}
-          isHidden={false}
+          isHidden={[0, 3].includes(i)}
           isRotated={false}
           isKakan={false}
           isSkipped={false}
         />
       {/each}
-      )
     {/each}
     {#if tsumohai.get(key)?.length ?? 0 > 0}
       {#if isSutehaiTurn && loginPubkey === key}
