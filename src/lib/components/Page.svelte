@@ -43,6 +43,10 @@
   let say: Map<string, string> = new Map<string, string>();
   let richiJunme: Map<string, number> = new Map<string, number>();
   let furoJunme: Map<string, number[]> = new Map<string, number[]>();
+  let furoHistory: Map<string, [{ sutehai: string; pubkey: string }]> = new Map<
+    string,
+    [{ sutehai: string; pubkey: string }]
+  >();
   let nakuKinds: Map<string, string[] | undefined> = new Map<
     string,
     string[] | undefined
@@ -208,6 +212,10 @@
             say = new Map<string, string>();
             richiJunme = new Map<string, number>();
             furoJunme = new Map<string, number[]>();
+            furoHistory = new Map<
+              string,
+              [{ sutehai: string; pubkey: string }]
+            >();
             pointDiff = new Map<string, string>();
             nakuKinds = new Map<string, string[] | undefined>();
             dorahyoujihai = '';
@@ -326,6 +334,18 @@
                   ),
                 );
                 furoJunme = furoJunme;
+                const history = furoHistory.get(pubkey);
+                if (history === undefined) {
+                  furoHistory.set(pubkey, [
+                    { sutehai: sutehaiSaved, pubkey: sutehaiPlayerSaved },
+                  ]);
+                } else {
+                  history.unshift({
+                    sutehai: sutehaiSaved,
+                    pubkey: sutehaiPlayerSaved,
+                  });
+                }
+                furoHistory = furoHistory;
               }
             }
             tehai = tehai;
@@ -416,6 +436,7 @@
       <Player
         {key}
         {value}
+        {sekijun}
         {tehai}
         {sutehai}
         {lastEventsToReply}
@@ -437,6 +458,7 @@
         {say}
         {pubkeysToOpenTehai}
         {furoJunme}
+        {furoHistory}
         {sutehaiPlayerSaved}
       />
     {/each}

@@ -63,7 +63,7 @@ export const fetchEventsToReplay = (
       kinds: [42],
       authors: [mahjongServerPubkey],
       '#e': [mahjongRoomId],
-      since: lastKyokuStartEvent.created_at - 1,
+      since: lastKyokuStartEvent.created_at,
       until: now,
     });
     rxReqB2.over();

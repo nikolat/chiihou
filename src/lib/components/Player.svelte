@@ -15,6 +15,7 @@
 
   export let key: string;
   export let value: NostrEvent | undefined;
+  export let sekijun: string[];
   export let tehai: Map<string, string>;
   export let sutehai: Map<string, string>;
   export let lastEventsToReply: Map<string, NostrEvent>;
@@ -36,7 +37,14 @@
   export let say: Map<string, string>;
   export let pubkeysToOpenTehai: Set<string>;
   export let furoJunme: Map<string, number[]>;
+  export let furoHistory: Map<string, [{ sutehai: string; pubkey: string }]>;
   export let sutehaiPlayerSaved: string;
+
+  const getSekijunIndex = (pubkey: string): number => {
+    const selfIndex = sekijun.indexOf(key);
+    const otherIndex = sekijun.indexOf(pubkey);
+    return (selfIndex - otherIndex - 1 + 4) % 4;
+  };
 
   $: profile = JSON.parse(value?.content || '{}');
   $: paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '');
@@ -134,18 +142,23 @@
         />
       {/if}
     {/each}
-    {#each paigazouTehai?.at(1) ?? [] as pai}
+    {#each paigazouTehai?.at(1) ?? [] as pai, index}
+      {@const sutehai = furoHistory.get(key)?.at(index)?.sutehai ?? ''}
+      {@const sutehaiPlayer = furoHistory.get(key)?.at(index)?.pubkey ?? ''}
       {@const pa = stringToArrayPlain(pai)}
+      {@const sutehaiPlayerIndex = getSekijunIndex(sutehaiPlayer)}
       &lt;
-      {#each pa as p}
+      {#each pa as p, i}
         <Pai
-          pai={p}
+          pai={i === sutehaiPlayerIndex ? sutehai : p}
           isDora={doras.includes(p)}
           isRemoved={false}
           isNaku={false}
           isAtari={false}
           isHidden={false}
-          isRotated={false}
+          isRotated={pa.length === 3 || i <= 1
+            ? i === sutehaiPlayerIndex
+            : i === 3 && sutehaiPlayerIndex === 2}
         />
       {/each}
       &gt;
