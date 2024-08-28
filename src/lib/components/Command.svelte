@@ -72,6 +72,8 @@
         isAtari={false}
         isHidden={false}
         isRotated={false}
+        isKakan={false}
+        isSkipped={false}
       /><Pai
         pai={pai2}
         isDora={doras.includes(pai2)}
@@ -80,6 +82,8 @@
         isAtari={false}
         isHidden={false}
         isRotated={false}
+        isKakan={false}
+        isSkipped={false}
       />
     {/each}
   {/if}
@@ -116,6 +120,8 @@
       isAtari={false}
       isHidden={false}
       isRotated={false}
+      isKakan={false}
+      isSkipped={false}
     />
   {/each}
   {#each getKakanHai(addHai(cTehai, cTsumohai)) as h}
@@ -132,6 +138,8 @@
       isAtari={false}
       isHidden={false}
       isRotated={false}
+      isKakan={false}
+      isSkipped={false}
     />
   {/each}
   {#if nokori !== undefined && canRichi(cTehai, cTsumohai, isRichi, nokori)}

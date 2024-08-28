@@ -47,6 +47,7 @@
     string,
     [{ sutehai: string; pubkey: string }]
   >();
+  let kakanHistory: Map<string, string[]> = new Map<string, string[]>();
   let nakuKinds: Map<string, string[] | undefined> = new Map<
     string,
     string[] | undefined
@@ -216,6 +217,7 @@
               string,
               [{ sutehai: string; pubkey: string }]
             >();
+            kakanHistory = new Map<string, string[]>();
             pointDiff = new Map<string, string>();
             nakuKinds = new Map<string, string[] | undefined>();
             dorahyoujihai = '';
@@ -316,6 +318,13 @@
               //加槓
               const newTehai = setKakan(t, paiOpen);
               tehai.set(pubkey, newTehai);
+              const history = kakanHistory.get(pubkey);
+              if (history === undefined) {
+                kakanHistory.set(pubkey, [paiOpen]);
+              } else {
+                history.unshift(paiOpen);
+              }
+              kakanHistory = kakanHistory;
             } else {
               if (sutehaiSaved === '') {
                 //暗槓
@@ -459,6 +468,7 @@
         {pubkeysToOpenTehai}
         {furoJunme}
         {furoHistory}
+        {kakanHistory}
         {sutehaiPlayerSaved}
       />
     {/each}

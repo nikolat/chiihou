@@ -35,6 +35,8 @@
       isAtari={false}
       isHidden={false}
       isRotated={false}
+      isKakan={false}
+      isSkipped={false}
     />{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
       pai={p}
       isDora={false}
@@ -43,6 +45,8 @@
       isAtari={false}
       isHidden={false}
       isRotated={false}
+      isKakan={false}
+      isSkipped={false}
     />{/each}
   {#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
     <br />
@@ -54,6 +58,8 @@
         isAtari={false}
         isHidden={false}
         isRotated={false}
+        isKakan={false}
+        isSkipped={false}
       />{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
         pai={p}
         isDora={false}
@@ -62,6 +68,8 @@
         isAtari={false}
         isHidden={false}
         isRotated={false}
+        isKakan={false}
+        isSkipped={false}
       />{/each}
   {/if}
 </p>

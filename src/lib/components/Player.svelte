@@ -2,7 +2,7 @@
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
   import { defaultRelays, getRoboHashURL } from '$lib/config';
-  import { awayuki_mahjong_emojis, zap } from '$lib/utils';
+  import { zap } from '$lib/utils';
   import {
     addHai,
     removeHai,
@@ -38,6 +38,7 @@
   export let pubkeysToOpenTehai: Set<string>;
   export let furoJunme: Map<string, number[]>;
   export let furoHistory: Map<string, [{ sutehai: string; pubkey: string }]>;
+  export let kakanHistory: Map<string, string[]>;
   export let sutehaiPlayerSaved: string;
 
   const getSekijunIndex = (pubkey: string): number => {
@@ -126,6 +127,8 @@
               loginPubkey !== key &&
               !pubkeysToOpenTehai.has(key)}
             isRotated={false}
+            isKakan={false}
+            isSkipped={false}
           /></button
         >
       {:else}
@@ -139,6 +142,8 @@
             loginPubkey !== key &&
             !pubkeysToOpenTehai.has(key)}
           isRotated={false}
+          isKakan={false}
+          isSkipped={false}
         />
       {/if}
     {/each}
@@ -147,7 +152,7 @@
       {@const sutehaiPlayer = furoHistory.get(key)?.at(index)?.pubkey ?? ''}
       {@const pa = stringToArrayPlain(pai)}
       {@const sutehaiPlayerIndex = getSekijunIndex(sutehaiPlayer)}
-      &lt;
+      {@const isKakan = kakanHistory.get(key)?.includes(sutehai) ?? false}
       {#each pa as p, i}
         <Pai
           pai={i === sutehaiPlayerIndex ? sutehai : p}
@@ -158,10 +163,12 @@
           isHidden={false}
           isRotated={pa.length === 3 || i <= 1
             ? i === sutehaiPlayerIndex
-            : i === 3 && sutehaiPlayerIndex === 2}
+            : (i === 3 && sutehaiPlayerIndex === 2) ||
+              (i === 2 && sutehaiPlayerIndex === 2 && isKakan)}
+          isKakan={i === sutehaiPlayerIndex && isKakan}
+          isSkipped={i - 1 === sutehaiPlayerIndex && isKakan}
         />
       {/each}
-      &gt;
     {/each}
     {#each paigazouTehai?.at(2) ?? [] as pai}
       {@const pa = stringToArrayPlain(pai)}
@@ -175,6 +182,8 @@
           isAtari={false}
           isHidden={false}
           isRotated={false}
+          isKakan={false}
+          isSkipped={false}
         />
       {/each}
       )
@@ -201,6 +210,8 @@
               loginPubkey !== key &&
               !pubkeysToOpenTehai.has(key)}
             isRotated={false}
+            isKakan={false}
+            isSkipped={false}
           /></button
         >
       {:else}
@@ -214,6 +225,8 @@
             loginPubkey !== key &&
             !pubkeysToOpenTehai.has(key)}
           isRotated={false}
+          isKakan={false}
+          isSkipped={false}
         />
       {/if}
     {/if}
@@ -235,6 +248,8 @@
           i === paigazouSutehai.length - 1}
         isHidden={false}
         isRotated={richiJunme.get(key) === i}
+        isKakan={false}
+        isSkipped={false}
       />{/each}
   </div>
 </dd>

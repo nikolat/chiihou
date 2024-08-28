@@ -11,6 +11,11 @@
     "lint": "prettier --check .",
     "format": "prettier --write ."
   },
+  "dependencies": {
+    "nostr-tools": "^2.7.2",
+    "rx-nostr": "^3.3.2",
+    "rx-nostr-crypto": "^3.1.1"
+  },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.2.4",
     "@sveltejs/adapter-static": "^3.0.4",
@@ -23,11 +28,6 @@
     "tslib": "^2.4.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.2"
-  },
-  "dependencies": {
-    "nostr-tools": "^2.7.2",
-    "rx-nostr": "^3.3.2",
-    "rx-nostr-crypto": "^3.1.1"
   },
   "type": "module"
 }

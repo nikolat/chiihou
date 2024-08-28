@@ -8,19 +8,28 @@
   export let isAtari: boolean;
   export let isHidden: boolean;
   export let isRotated: boolean;
+  export let isKakan: boolean;
+  export let isSkipped: boolean;
 </script>
 
-<span class={isRotated ? 'rotate' : ''}>
-  <img
-    class={'pai' +
-      (isDora && !isHidden ? ' dora' : '') +
-      (isRemoved ? ' removed' : '') +
-      (isNaku ? ' naku' : '') +
-      (isAtari ? ' atari' : '')}
-    alt={pai}
-    src={getEmojiUrl(isHidden ? 'back' : pai)}
-  />
-</span>
+{#if !isSkipped}
+  <span class={'pai_container' + (isRotated ? ' rotate' : '')}>
+    <img
+      class={'pai' +
+        (isDora && !isHidden ? ' dora' : '') +
+        (isRemoved ? ' removed' : '') +
+        (isNaku ? ' naku' : '') +
+        (isAtari ? ' atari' : '')}
+      alt={pai}
+      src={getEmojiUrl(isHidden ? 'back' : pai)}
+    />{#if isRotated && isKakan}<img
+        class="pai"
+        alt={pai}
+        src={getEmojiUrl(pai)}
+      />
+    {/if}
+  </span>
+{/if}
 
 <style>
   .pai {
@@ -41,6 +50,8 @@
   .rotate {
     display: inline-block;
     width: 30px;
+    white-space: nowrap;
+    text-align: left;
     transform-origin: 0% 0%;
     transform: rotate(270deg) translate(-30px, 0px);
   }
