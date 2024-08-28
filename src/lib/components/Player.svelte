@@ -117,6 +117,7 @@
             isHidden={loginPubkey !== undefined &&
               loginPubkey !== key &&
               !pubkeysToOpenTehai.has(key)}
+            isRotated={false}
           /></button
         >
       {:else}
@@ -129,6 +130,7 @@
           isHidden={loginPubkey !== undefined &&
             loginPubkey !== key &&
             !pubkeysToOpenTehai.has(key)}
+          isRotated={false}
         />
       {/if}
     {/each}
@@ -143,6 +145,7 @@
           isNaku={false}
           isAtari={false}
           isHidden={false}
+          isRotated={false}
         />
       {/each}
       &gt;
@@ -158,6 +161,7 @@
           isNaku={false}
           isAtari={false}
           isHidden={false}
+          isRotated={false}
         />
       {/each}
       )
@@ -183,6 +187,7 @@
             isHidden={loginPubkey !== undefined &&
               loginPubkey !== key &&
               !pubkeysToOpenTehai.has(key)}
+            isRotated={false}
           /></button
         >
       {:else}
@@ -195,17 +200,15 @@
           isHidden={loginPubkey !== undefined &&
             loginPubkey !== key &&
             !pubkeysToOpenTehai.has(key)}
+          isRotated={false}
         />
       {/if}
     {/if}
   </div>
   <br />
   <div class="kawa">
-    {#each paigazouSutehai as p, i}{#if richiJunme.get(key) === i}<img
-          src={awayuki_mahjong_emojis.mahjong_stick1000}
-          alt=""
-          class="pai richi"
-        />{/if}{#if [6, 12].includes(i)}<br />{/if}<Pai
+    {#each paigazouSutehai as p, i}
+      {#if [6, 12].includes(i)}<br />{/if}<Pai
         pai={p}
         isDora={doras.includes(p)}
         isRemoved={furoJunme.get(key)?.includes(i) ?? false}
@@ -218,6 +221,7 @@
           sutehaiPlayerSaved === key &&
           i === paigazouSutehai.length - 1}
         isHidden={false}
+        isRotated={richiJunme.get(key) === i}
       />{/each}
   </div>
 </dd>

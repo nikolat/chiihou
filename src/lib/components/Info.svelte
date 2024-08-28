@@ -34,6 +34,7 @@
       isNaku={false}
       isAtari={false}
       isHidden={false}
+      isRotated={false}
     />{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
       pai={p}
       isDora={false}
@@ -41,6 +42,7 @@
       isNaku={false}
       isAtari={false}
       isHidden={false}
+      isRotated={false}
     />{/each}
   {#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
     <br />
@@ -51,6 +53,7 @@
         isNaku={false}
         isAtari={false}
         isHidden={false}
+        isRotated={false}
       />{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
         pai={p}
         isDora={false}
@@ -58,6 +61,7 @@
         isNaku={false}
         isAtari={false}
         isHidden={false}
+        isRotated={false}
       />{/each}
   {/if}
 </p>
