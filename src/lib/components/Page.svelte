@@ -73,7 +73,7 @@
   let rxNostr: RxNostr | undefined;
   const defaultSleepInterval = 500;
   let sleepInterval = defaultSleepInterval;
-  let enableStop: boolean = false;
+  let isStoppedReplay: boolean = false;
   let isGameStarted: boolean = false;
 
   const setLoginPubkey = (value: string | undefined) => {
@@ -82,8 +82,8 @@
   const setSleepInterval = (value: number) => {
     sleepInterval = value;
   };
-  const setEnableStop = (value: boolean) => {
-    enableStop = value;
+  const setIsStoppedReplay = (value: boolean) => {
+    isStoppedReplay = value;
   };
   const setSutehaiCommand = (value: string) => {
     sutehaiCommand = value;
@@ -159,7 +159,7 @@
         }
         continue;
       }
-      while (enableStop) {
+      while (isStoppedReplay) {
         await sleep(sleepInterval);
       }
       if (ev.content.includes('NOTIFY')) {
@@ -429,10 +429,12 @@
   <Menu
     {rxNostr}
     {loginPubkey}
-    {enableStop}
-    {setEnableStop}
+    {isStoppedReplay}
+    {setIsStoppedReplay}
     {setSleepInterval}
     {setLoginPubkey}
+    {replay}
+    {events}
   />
 </header>
 <main>

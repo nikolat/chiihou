@@ -1,19 +1,22 @@
 <script lang="ts">
   import type { RxNostr } from 'rx-nostr';
+  import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
   import {
     mahjongPlayerPubkeys,
     mahjongRoomId,
     mahjongServerPubkey,
   } from '$lib/config';
-  import { getNpubWithNIP07, sleep } from '$lib/utils';
+  import { getNpubWithNIP07, RxReqMode, sleep } from '$lib/utils';
 
   export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string | undefined;
-  export let enableStop: boolean;
-  export let setEnableStop: (value: boolean) => void;
+  export let isStoppedReplay: boolean;
+  export let setIsStoppedReplay: (value: boolean) => void;
   export let setSleepInterval: (value: number) => void;
   export let setLoginPubkey: (value: string | undefined) => void;
+  export let replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>;
+  export let events: NostrEvent[];
 
   const sendMention = (
     message: string,
@@ -53,34 +56,34 @@
   {nip19.npubEncode(loginPubkey)}
 {/if}
 <br />
-{#if enableStop}
-  <button
-    title="再生"
-    on:click={() => {
-      setEnableStop(false);
-      setSleepInterval(500);
-    }}>▶️</button
-  >
-{:else}
-  <button
-    title="一時停止"
-    on:click={() => {
-      setEnableStop(true);
-      setSleepInterval(500);
-    }}>⏸️</button
-  >
-{/if}
+<button
+  title="最初から"
+  on:click={async () => {
+    setIsStoppedReplay(false);
+    setSleepInterval(0);
+    await sleep(500);
+    setSleepInterval(500);
+    await replay(events.toReversed(), RxReqMode.Backward);
+  }}>⏮</button
+>
+<button
+  title={isStoppedReplay ? '再生' : '一時停止'}
+  on:click={() => {
+    setIsStoppedReplay(!isStoppedReplay);
+    setSleepInterval(500);
+  }}>{isStoppedReplay ? '▶️' : '⏸️'}</button
+>
 <button
   title="早送り"
   on:click={() => {
-    setEnableStop(false);
+    setIsStoppedReplay(false);
     setSleepInterval(100);
   }}>⏩</button
 >
 <button
   title="結果を見る"
   on:click={() => {
-    setEnableStop(false);
+    setIsStoppedReplay(false);
     setSleepInterval(0);
   }}>⏭️</button
 >
