@@ -139,10 +139,10 @@ export const fetchProfiles = (
 
 export const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
 
-export function insertEventIntoDescendingList(
+export const insertEventIntoDescendingList = (
   sortedArray: NostrEvent[],
   event: NostrEvent,
-): NostrEvent[] {
+): NostrEvent[] => {
   const [idx, found] = binarySearch(sortedArray, (b) => {
     if (event.id === b.id) return 0;
     if (event.created_at === b.created_at) return event.id.localeCompare(b.id);
@@ -152,7 +152,7 @@ export function insertEventIntoDescendingList(
     sortedArray.splice(idx, 0, event);
   }
   return sortedArray;
-}
+};
 
 export const getTagsReply = (event: NostrEvent): string[][] => {
   const tagsReply: string[][] = [];
@@ -214,6 +214,22 @@ export const sendDapai = (
       eventToReply.created_at < now ? now : eventToReply.created_at + 1,
   });
   setSutehaiCommand('sutehai');
+};
+
+export const sendMention = (
+  rxNostr: RxNostr | undefined,
+  message: string,
+  pubkey: string = mahjongServerPubkey,
+) => {
+  if (rxNostr === undefined) return;
+  rxNostr.send({
+    kind: 42,
+    content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
+    tags: [
+      ['e', mahjongRoomId, '', 'root'],
+      ['p', pubkey, ''],
+    ],
+  });
 };
 
 export const setFuro = (

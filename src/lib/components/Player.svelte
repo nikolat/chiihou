@@ -40,6 +40,7 @@
   export let furoHistory: Map<string, [{ sutehai: string; pubkey: string }]>;
   export let kakanHistory: Map<string, string[]>;
   export let sutehaiPlayerSaved: string;
+  export let isKyokuEnd: boolean;
 
   const getSekijunIndex = (pubkey: string): number => {
     const selfIndex = sekijun.indexOf(key);
@@ -98,6 +99,7 @@
         {setSutehai}
         isRichi={(richiJunme.get(loginPubkey) ?? -1) >= 0}
         {callSendDapai}
+        {isKyokuEnd}
       />{/if}
     <br />
     {say.get(key) ? `＜ [${say.get(key)}]` : ''}

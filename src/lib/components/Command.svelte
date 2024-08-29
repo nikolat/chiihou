@@ -3,7 +3,7 @@
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
   import { mahjongServerPubkey } from '$lib/config';
-  import { canTsumo, getAnkanHai, getTagsReply } from '$lib/utils';
+  import { canTsumo, getAnkanHai, getTagsReply, sendMention } from '$lib/utils';
   import { addHai } from '$lib/mjlib/mj_common';
   import { canRichi, getChiMaterial, getKakanHai } from '$lib/mjlib/mj_ai';
   import Pai from '$lib/components/Pai.svelte';
@@ -23,6 +23,7 @@
   export let setSutehai: (value: string) => void;
   export let isRichi: boolean;
   export let callSendDapai: (pai: string | undefined) => void;
+  export let isKyokuEnd: boolean;
 
   const sendReply = (message: string) => {
     const ev = lastEventsToReply.get(loginPubkey);
@@ -158,4 +159,11 @@
       }}>tsumo</button
     >
   {/if}
+{/if}
+{#if isKyokuEnd}
+  <button
+    on:click={() => {
+      sendMention(rxNostr, 'next');
+    }}>Next</button
+  >
 {/if}

@@ -14,7 +14,7 @@
   export let result: string | undefined;
 </script>
 
-<p>
+<div class="info">
   {bafu ?? '?'}{kyoku ?? 0}局
   <img
     src={awayuki_mahjong_emojis.mahjong_stick100}
@@ -72,11 +72,20 @@
         isSkipped={false}
       />{/each}
   {/if}
-</p>
-<pre>{result ?? ''}</pre>
+</div>
+<div class="info">
+  <pre>{result ?? ''}</pre>
+</div>
 
 <style>
   .pai {
     height: 30px;
+  }
+  .info {
+    height: 120px;
+    overflow-y: auto;
+    border: 1px gray solid;
+    float: left;
+    width: calc(99% / 2);
   }
 </style>

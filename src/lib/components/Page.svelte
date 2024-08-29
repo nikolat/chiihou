@@ -75,6 +75,7 @@
   let sleepInterval = defaultSleepInterval;
   let isStoppedReplay: boolean = false;
   let isGameStarted: boolean = false;
+  let isKyokuEnd: boolean = false;
 
   const setLoginPubkey = (value: string | undefined) => {
     loginPubkey = value;
@@ -138,6 +139,7 @@
             ?.at(1);
           if (p === undefined) return;
           nakuKinds.set(p, ks);
+          nakuKinds = nakuKinds;
         } else if (command === 'sutehai?') {
           //リーチ済
           if (p === loginPubkey && richiJunme.get(p) !== undefined) {
@@ -227,6 +229,7 @@
             sutehaiCommand = 'sutehai';
             result = '';
             pubkeysToOpenTehai = new Set<string>();
+            isKyokuEnd = false;
             const idx = sekijun.indexOf(oya);
             kyoku = idx + 1;
             kaze.set(sekijun[idx], '東');
@@ -381,6 +384,7 @@
             result = '流局';
             break;
           case 'kyokuend':
+            isKyokuEnd = true;
             break;
           case 'gameend':
             const itr = ev.content.matchAll(/nostr:(npub1\w{58})\s(-?\d+)/g);
@@ -484,6 +488,7 @@
           {furoHistory}
           {kakanHistory}
           {sutehaiPlayerSaved}
+          {isKyokuEnd}
         />
       {/each}
     </dl>
@@ -516,6 +521,9 @@
 </footer>
 
 <style>
+  #players {
+    clear: both;
+  }
   .hidden {
     display: none;
   }
