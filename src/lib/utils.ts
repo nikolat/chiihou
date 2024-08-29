@@ -27,12 +27,8 @@ export const enum RxReqMode {
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
   setEvents: (value: NostrEvent[]) => void,
-  replay: (
-    events: NostrEvent[],
-    mode: RxReqMode,
-    sleepInterval?: number,
-  ) => Promise<void>,
-  sleepInterval: number,
+  replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>,
+  setSleepInterval: (value: number) => void,
 ) => {
   let events: NostrEvent[] = [];
   const rxReqB = createRxBackwardReq();
@@ -72,11 +68,10 @@ export const fetchEventsToReplay = (
     const isKyokuEnd = events.some((ev) =>
       ev.content.includes('NOTIFY kyokuend'),
     );
-    await replay(
-      events.toReversed(),
-      RxReqMode.Backward,
-      isKyokuEnd ? sleepInterval : 0,
-    );
+    if (!isKyokuEnd) {
+      setSleepInterval(0);
+    }
+    await replay(events.toReversed(), RxReqMode.Backward);
     rxReqF.emit({
       kinds: [42],
       authors: [mahjongServerPubkey],

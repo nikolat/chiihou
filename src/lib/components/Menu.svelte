@@ -10,7 +10,9 @@
 
   export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string | undefined;
-  export let setEnableFastForward: (value: boolean) => void;
+  export let enableStop: boolean;
+  export let setEnableStop: (value: boolean) => void;
+  export let setSleepInterval: (value: number) => void;
   export let setLoginPubkey: (value: string | undefined) => void;
 
   const sendMention = (
@@ -28,12 +30,12 @@
   };
 
   const gamestartByForce = async () => {
-    setEnableFastForward(true);
+    setSleepInterval(0);
     sendMention('reset');
-    await sleep(200);
+    await sleep(500);
     sendMention('gamestart');
     for (let i = 0; i <= 2; i++) {
-      await sleep(200);
+      await sleep(500);
       sendMention('join', mahjongPlayerPubkeys[i]);
     }
   };
@@ -48,14 +50,41 @@
       setLoginPubkey(undefined);
     }}>Logout</button
   >
-  <button
-    title="早送り"
-    on:click={() => {
-      setEnableFastForward(true);
-    }}>⏩</button
-  >
   {nip19.npubEncode(loginPubkey)}
-  <br />
+{/if}
+<br />
+{#if enableStop}
+  <button
+    title="再生"
+    on:click={() => {
+      setEnableStop(false);
+      setSleepInterval(500);
+    }}>▶️</button
+  >
+{:else}
+  <button
+    title="一時停止"
+    on:click={() => {
+      setEnableStop(true);
+      setSleepInterval(500);
+    }}>⏸️</button
+  >
+{/if}
+<button
+  title="早送り"
+  on:click={() => {
+    setEnableStop(false);
+    setSleepInterval(100);
+  }}>⏩</button
+>
+<button
+  title="結果を見る"
+  on:click={() => {
+    setEnableStop(false);
+    setSleepInterval(0);
+  }}>⏭️</button
+>
+{#if loginPubkey !== undefined}
   <button
     on:click={() => {
       sendMention('ping');

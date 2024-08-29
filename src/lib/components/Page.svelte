@@ -71,15 +71,19 @@
   >();
   let requestedCommand: string | undefined;
   let rxNostr: RxNostr | undefined;
-  const sleepInterval = 500;
-  let enableFastForward: boolean = false;
+  const defaultSleepInterval = 500;
+  let sleepInterval = defaultSleepInterval;
+  let enableStop: boolean = false;
   let isGameStarted: boolean = false;
 
   const setLoginPubkey = (value: string | undefined) => {
     loginPubkey = value;
   };
-  const setEnableFastForward = (value: boolean) => {
-    enableFastForward = value;
+  const setSleepInterval = (value: number) => {
+    sleepInterval = value;
+  };
+  const setEnableStop = (value: boolean) => {
+    enableStop = value;
   };
   const setSutehaiCommand = (value: string) => {
     sutehaiCommand = value;
@@ -104,14 +108,10 @@
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
-    fetchEventsToReplay(rxNostr, setEvents, replay, sleepInterval);
+    fetchEventsToReplay(rxNostr, setEvents, replay, setSleepInterval);
   });
 
-  const replay = async (
-    events: NostrEvent[],
-    mode: RxReqMode,
-    sInterval?: number,
-  ) => {
+  const replay = async (events: NostrEvent[], mode: RxReqMode) => {
     for (const ev of events) {
       if (ev.content.includes('GET')) {
         const p = ev.tags
@@ -151,7 +151,7 @@
             ) {
               //オートで自摸切り
               if (mode === RxReqMode.Forward) {
-                await sleep(sleepInterval);
+                await sleep(defaultSleepInterval);
                 callSendDapai(cTsumohai);
               }
             }
@@ -159,13 +159,15 @@
         }
         continue;
       }
+      while (enableStop) {
+        await sleep(sleepInterval);
+      }
       if (ev.content.includes('NOTIFY')) {
         if (
-          sInterval !== undefined &&
-          !enableFastForward &&
-          !/gamestart|kyokustart|point/.test(ev.content)
+          !/gamestart|kyokustart|point/.test(ev.content) &&
+          sleepInterval !== 0
         )
-          await sleep(sInterval);
+          await sleep(sleepInterval);
         lastEventsToReply = new Map<string, NostrEvent>();
         requestedCommand = undefined;
         const p = ev.tags
@@ -424,7 +426,14 @@
 
 <header>
   <h1>地鳳</h1>
-  <Menu {rxNostr} {loginPubkey} {setEnableFastForward} {setLoginPubkey} />
+  <Menu
+    {rxNostr}
+    {loginPubkey}
+    {enableStop}
+    {setEnableStop}
+    {setSleepInterval}
+    {setLoginPubkey}
+  />
 </header>
 <main>
   <section id="info">
