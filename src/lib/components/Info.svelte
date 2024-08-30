@@ -84,8 +84,19 @@
 <div class="info result">
   {result ?? ''}
 </div>
-<div class="info chat">
-  <input type="text" bind:value={inputText} />
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="info chat" on:click|stopPropagation={() => {}}>
+  <input
+    type="text"
+    bind:value={inputText}
+    on:keydown={(e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        sendChatMessage(rxNostr, inputText);
+        inputText = '';
+      }
+    }}
+  />
   <button
     on:click={() => {
       sendChatMessage(rxNostr, inputText);
@@ -124,6 +135,9 @@
   }
   .result {
     white-space: pre-wrap;
+  }
+  .chat input {
+    width: calc(100% - 5em);
   }
   .chat dl {
     margin: 0;
