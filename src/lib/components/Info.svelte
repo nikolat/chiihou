@@ -101,7 +101,7 @@
         <img
           class="player"
           alt={profile.name ?? ''}
-          title={new Date(1000 * event.created_at).toLocaleString()}
+          title={profile.name ?? ''}
           src={profile.picture ?? getRoboHashURL(event.pubkey)}
         />{profile.display_name ?? ''} @{profile.name ?? ''}
         <time>{new Date(1000 * event.created_at).toLocaleString()}</time>
