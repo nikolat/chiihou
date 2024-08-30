@@ -275,6 +275,7 @@
   }
   dt img.player {
     height: 64px;
+    border-radius: 10%;
     float: left;
   }
   dt div.command {

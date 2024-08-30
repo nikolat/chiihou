@@ -436,6 +436,10 @@
 </script>
 
 <svelte:head>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+  />
   <script
     type="module"
     src="https://cdn.jsdelivr.net/npm/nostr-zap@1.1.0"
@@ -554,5 +558,14 @@
     #log {
       clear: both;
     }
+  }
+  :global(button) {
+    margin: 0 0 1px 0;
+    padding: 1px 3px;
+    border-radius: 3px;
+  }
+  :global(input) {
+    padding: 0;
+    display: inline-block;
   }
 </style>

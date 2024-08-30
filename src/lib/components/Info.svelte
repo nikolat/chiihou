@@ -22,7 +22,7 @@
   let inputText: string;
 </script>
 
-<div class="info">
+<div class="info base">
   {bafu ?? '?'}{kyoku ?? 0}局
   <img
     src={awayuki_mahjong_emojis.mahjong_stick100}
@@ -127,14 +127,20 @@
     height: 30px;
   }
   .info {
-    height: 120px;
+    height: 140px;
     overflow-y: auto;
     border: 1px gray solid;
     float: left;
-    width: calc(99% / 2);
+  }
+  .base {
+    width: 28%;
   }
   .result {
+    width: 25%;
     white-space: pre-wrap;
+  }
+  .chat {
+    width: 45%;
   }
   .chat input {
     width: calc(100% - 5em);
@@ -144,13 +150,9 @@
   }
   .chat dt img {
     height: 16px;
+    border-radius: 10%;
   }
   .chat dd {
     white-space: pre-wrap;
-  }
-  @media all and (min-width: 480px) {
-    .info {
-      width: calc(99% / 3);
-    }
   }
 </style>
