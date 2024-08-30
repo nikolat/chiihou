@@ -12,6 +12,8 @@ export const mahjongPlayerPubkeys = [
   '75fb3240d4af1255a249cf33f9223529ec41f223bb8dd93b82bbe6e799f9e4a1',
 ];
 
+export const chatHashtag = 'chiihou_chat';
+
 export const linkGitHub = 'https://github.com/nikolat/chiihou';
 
 export const defaultRelays = [

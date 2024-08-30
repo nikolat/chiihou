@@ -17,7 +17,7 @@ import {
 } from '$lib/mjlib/mj_common';
 import { getShanten } from '$lib/mjlib/mj_shanten';
 import { getKakanHai } from '$lib/mjlib/mj_ai';
-import { mahjongRoomId, mahjongServerPubkey } from '$lib/config';
+import { chatHashtag, mahjongRoomId, mahjongServerPubkey } from '$lib/config';
 
 export const enum RxReqMode {
   Backward,
@@ -27,18 +27,36 @@ export const enum RxReqMode {
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
   setEvents: (value: NostrEvent[]) => void,
+  setChatEvents: (value: NostrEvent[]) => void,
+  setChatMembers: (value: Map<string, NostrEvent>) => void,
   replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>,
   setSleepInterval: (value: number) => void,
 ) => {
   let events: NostrEvent[] = [];
+  let chatEvents: NostrEvent[] = [];
+  const chatMembers: Map<string, NostrEvent> = new Map<string, NostrEvent>();
   const rxReqB = createRxBackwardReq();
-  const rxReqF = createRxForwardReq();
   const now = Math.floor(Date.now() / 1000);
   const flushes$ = new Subject<void>();
   const next = (packet: EventPacket) => {
     const event = packet.event;
-    events = insertEventIntoDescendingList(events, event);
-    setEvents(events);
+    if (event.kind === 0) {
+      const ev = chatMembers.get(event.pubkey);
+      if (ev === undefined || ev.created_at < event.created_at) {
+        chatMembers.set(event.pubkey, event);
+        setChatMembers(chatMembers);
+      }
+    } else if (
+      event.tags.some(
+        (tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag,
+      )
+    ) {
+      chatEvents = insertEventIntoDescendingList(chatEvents, event);
+      setChatEvents(chatEvents);
+    } else {
+      events = insertEventIntoDescendingList(events, event);
+      setEvents(events);
+    }
   };
   const complete1 = async () => {
     const lastKyokuStartEvent = events.find((ev) =>
@@ -50,18 +68,28 @@ export const fetchEventsToReplay = (
       console.warn('#kyokustart is not found');
       return;
     }
+    const chatMemberPubkeys = Array.from(
+      new Set<string>(chatEvents.map((ev) => ev.pubkey)),
+    );
     const rxReqB2 = createRxBackwardReq();
     const subscriptionB2 = rxNostr
       .use(rxReqB2)
       .pipe(uniq(flushes$))
       .subscribe({ next, complete: complete2 });
-    rxReqB2.emit({
-      kinds: [42],
-      authors: [mahjongServerPubkey],
-      '#e': [mahjongRoomId],
-      since: lastKyokuStartEvent.created_at,
-      until: now,
-    });
+    rxReqB2.emit([
+      {
+        kinds: [42],
+        authors: [mahjongServerPubkey],
+        '#e': [mahjongRoomId],
+        since: lastKyokuStartEvent.created_at,
+        until: now,
+      },
+      {
+        kinds: [0],
+        authors: chatMemberPubkeys,
+        until: now,
+      },
+    ]);
     rxReqB2.over();
   };
   const complete2 = async () => {
@@ -72,41 +100,81 @@ export const fetchEventsToReplay = (
       setSleepInterval(0);
     }
     await replay(events.toReversed(), RxReqMode.Backward);
-    rxReqF.emit({
-      kinds: [42],
-      authors: [mahjongServerPubkey],
-      '#e': [mahjongRoomId],
-      since: now,
-    });
+    const rxReqF = createRxForwardReq();
+    const subscriptionF = rxNostr
+      .use(rxReqF)
+      .pipe(uniq(flushes$))
+      .subscribe((packet) => {
+        const event = packet.event;
+        if (
+          event.tags.some(
+            (tag) =>
+              tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag,
+          )
+        ) {
+          chatEvents = insertEventIntoDescendingList(chatEvents, event);
+          setChatEvents(chatEvents);
+          if (!chatMembers.has(event.pubkey)) {
+            const rxReqB3 = createRxBackwardReq();
+            const subscriptionB3 = rxNostr
+              .use(rxReqB3)
+              .pipe(uniq(flushes$))
+              .subscribe({ next });
+            rxReqB3.emit({
+              kinds: [0],
+              authors: [event.pubkey],
+              until: now,
+            });
+            rxReqB3.over();
+          }
+        } else {
+          events = insertEventIntoDescendingList(events, packet.event);
+          setEvents(events);
+          replay([packet.event], RxReqMode.Forward);
+        }
+      });
+    rxReqF.emit([
+      {
+        kinds: [42],
+        authors: [mahjongServerPubkey],
+        '#e': [mahjongRoomId],
+        since: now,
+      },
+      {
+        kinds: [1, 42],
+        '#t': [chatHashtag],
+        since: now,
+      },
+    ]);
   };
   const subscriptionB = rxNostr
     .use(rxReqB)
     .pipe(uniq(flushes$))
     .subscribe({ next, complete: complete1 });
-  const subscriptionF = rxNostr
-    .use(rxReqF)
-    .pipe(uniq(flushes$))
-    .subscribe((packet) => {
-      events = insertEventIntoDescendingList(events, packet.event);
-      setEvents(events);
-      replay([packet.event], RxReqMode.Forward);
-    });
-  rxReqB.emit({
-    kinds: [42],
-    authors: [mahjongServerPubkey],
-    '#e': [mahjongRoomId],
-    '#t': ['gamestart'],
-    limit: 4,
-    until: now,
-  });
-  rxReqB.emit({
-    kinds: [42],
-    authors: [mahjongServerPubkey],
-    '#e': [mahjongRoomId],
-    '#t': ['kyokustart'],
-    limit: 1,
-    until: now,
-  });
+  rxReqB.emit([
+    {
+      kinds: [42],
+      authors: [mahjongServerPubkey],
+      '#e': [mahjongRoomId],
+      '#t': ['gamestart'],
+      limit: 4,
+      until: now,
+    },
+    {
+      kinds: [42],
+      authors: [mahjongServerPubkey],
+      '#e': [mahjongRoomId],
+      '#t': ['kyokustart'],
+      limit: 1,
+      until: now,
+    },
+    {
+      kinds: [1, 42],
+      '#t': [chatHashtag],
+      limit: 10,
+      until: now,
+    },
+  ]);
   rxReqB.over();
 };
 
@@ -228,6 +296,21 @@ export const sendMention = (
     tags: [
       ['e', mahjongRoomId, '', 'root'],
       ['p', pubkey, ''],
+    ],
+  });
+};
+
+export const sendChatMessage = (
+  rxNostr: RxNostr | undefined,
+  message: string,
+) => {
+  if (rxNostr === undefined) return;
+  rxNostr.send({
+    kind: 42,
+    content: `${message} #${chatHashtag}`,
+    tags: [
+      ['e', mahjongRoomId, '', 'root'],
+      ['t', chatHashtag],
     ],
   });
 };

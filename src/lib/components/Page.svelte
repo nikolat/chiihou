@@ -29,10 +29,12 @@
   import Player from '$lib/components/Player.svelte';
 
   let events: NostrEvent[] = [];
+  let chatEvents: NostrEvent[] = [];
   let players: Map<string, NostrEvent | undefined> = new Map<
     string,
     NostrEvent | undefined
   >();
+  let chatMembers: Map<string, NostrEvent> = new Map<string, NostrEvent>();
   let sekijun: string[] = [];
   let kaze: Map<string, string> = new Map<string, string>();
   let points: Map<string, number> = new Map<string, number>();
@@ -95,8 +97,14 @@
   const setPlayers = (value: Map<string, NostrEvent | undefined>) => {
     players = value;
   };
+  const setChatMembers = (value: Map<string, NostrEvent>) => {
+    chatMembers = value;
+  };
   const setEvents = (value: NostrEvent[]) => {
     events = value;
+  };
+  const setChatEvents = (value: NostrEvent[]) => {
+    chatEvents = value;
   };
   const callSendDapai = (pai: string | undefined) => {
     if (pai === undefined) return;
@@ -109,7 +117,14 @@
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
-    fetchEventsToReplay(rxNostr, setEvents, replay, setSleepInterval);
+    fetchEventsToReplay(
+      rxNostr,
+      setEvents,
+      setChatEvents,
+      setChatMembers,
+      replay,
+      setSleepInterval,
+    );
   });
 
   const replay = async (events: NostrEvent[], mode: RxReqMode) => {
@@ -454,6 +469,9 @@
       {uradorahyoujihai}
       {doras}
       {result}
+      {chatEvents}
+      {chatMembers}
+      {rxNostr}
     />
   </section>
   <section id="players">

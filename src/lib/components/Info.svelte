@@ -1,7 +1,10 @@
 <script lang="ts">
+  import type { RxNostr } from 'rx-nostr';
+  import type { NostrEvent } from 'nostr-tools/pure';
   import { stringToArrayPlain } from '$lib/mjlib/mj_common';
-  import { awayuki_mahjong_emojis } from '$lib/utils';
+  import { awayuki_mahjong_emojis, sendChatMessage } from '$lib/utils';
   import Pai from '$lib/components/Pai.svelte';
+  import { chatHashtag, getRoboHashURL } from '$lib/config';
 
   export let bafu: string | undefined;
   export let kyoku: number | undefined;
@@ -12,6 +15,11 @@
   export let uradorahyoujihai: string | undefined;
   export let doras: string[];
   export let result: string | undefined;
+  export let chatEvents: NostrEvent[];
+  export let chatMembers: Map<string, NostrEvent>;
+  export let rxNostr: RxNostr | undefined;
+
+  let inputText: string;
 </script>
 
 <div class="info">
@@ -73,8 +81,34 @@
       />{/each}
   {/if}
 </div>
-<div class="info">
-  <pre>{result ?? ''}</pre>
+<div class="info result">
+  {result ?? ''}
+</div>
+<div class="info chat">
+  <input type="text" bind:value={inputText} />
+  <button
+    on:click={() => {
+      sendChatMessage(rxNostr, inputText);
+      inputText = '';
+    }}
+    disabled={!inputText}>Post</button
+  >
+  <dl>
+    {#each chatEvents as event}
+      {@const kind0 = chatMembers.get(event.pubkey)}
+      {@const profile = JSON.parse(kind0?.content || '{}')}
+      <dt>
+        <img
+          class="player"
+          alt={profile.name ?? ''}
+          title={new Date(1000 * event.created_at).toLocaleString()}
+          src={profile.picture ?? getRoboHashURL(event.pubkey)}
+        />{profile.display_name ?? ''} @{profile.name ?? ''}
+        <time>{new Date(1000 * event.created_at).toLocaleString()}</time>
+      </dt>
+      <dd>{event.content.replace(`#${chatHashtag}`, '').trim()}</dd>
+    {/each}
+  </dl>
 </div>
 
 <style>
@@ -88,7 +122,21 @@
     float: left;
     width: calc(99% / 2);
   }
-  .info pre {
+  .result {
+    white-space: pre-wrap;
+  }
+  .chat dl {
     margin: 0;
+  }
+  .chat dt img {
+    height: 16px;
+  }
+  .chat dd {
+    white-space: pre-wrap;
+  }
+  @media all and (min-width: 480px) {
+    .info {
+      width: calc(99% / 3);
+    }
   }
 </style>
