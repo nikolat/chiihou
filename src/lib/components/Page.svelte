@@ -559,12 +559,12 @@
       clear: both;
     }
   }
-  :global(button) {
+  :global(body button) {
     margin: 0 0 1px 0;
     padding: 1px 3px;
     border-radius: 3px;
   }
-  :global(input) {
+  :global(body input) {
     padding: 0;
     display: inline-block;
   }
