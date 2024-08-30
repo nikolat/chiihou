@@ -88,4 +88,7 @@
     float: left;
     width: calc(99% / 2);
   }
+  .info pre {
+    margin: 0;
+  }
 </style>
