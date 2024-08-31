@@ -41,6 +41,7 @@
   export let kakanHistory: Map<string, string[]>;
   export let sutehaiPlayerSaved: string;
   export let isAgariPlayer: boolean;
+  export let isFurikomiPlayer: boolean;
   export let isKyokuEnd: boolean;
 
   const getSekijunIndex = (pubkey: string): number => {
@@ -69,7 +70,8 @@
       (loginPubkey !== undefined && loginPubkey === key))
       ? ' naku_turn'
       : '') +
-    (isAgariPlayer ? ' is_agari' : '')}
+    (isAgariPlayer ? ' is_agari' : '') +
+    (isFurikomiPlayer ? ' is_furikomi' : '')}
 >
   {kaze.get(key) ?? '?'}家
   {profile.display_name ?? ''} @{profile.name ?? ''}
@@ -270,6 +272,9 @@
   }
   dt.is_agari {
     box-shadow: 1px 1px 5px 1px orange;
+  }
+  dt.is_furikomi {
+    box-shadow: 1px 1px 5px 1px red;
   }
   dt img.player {
     height: 64px;

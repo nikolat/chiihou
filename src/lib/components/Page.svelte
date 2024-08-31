@@ -63,6 +63,7 @@
   let uradorahyoujihai: string | undefined;
   let result: string | undefined;
   let agariPlayer: string | undefined;
+  let furikomiPlayer: string | undefined;
   let pubkeysToOpenTehai: Set<string> = new Set<string>();
   let sutehaiSaved: string = '';
   let sutehaiPlayerSaved: string = '';
@@ -245,6 +246,7 @@
             sutehaiCommand = 'sutehai';
             result = '';
             agariPlayer = '';
+            furikomiPlayer = '';
             pubkeysToOpenTehai = new Set<string>();
             isKyokuEnd = false;
             const idx = sekijun.indexOf(oya);
@@ -395,6 +397,7 @@
             r += `${fu}符${c}翻`;
             result = r;
             agariPlayer = pubkey;
+            furikomiPlayer = sutehaiPlayerSaved;
             pubkeysToOpenTehai.add(pubkey);
             pubkeysToOpenTehai = pubkeysToOpenTehai;
             break;
@@ -487,6 +490,8 @@
       {#each Array.from(players.entries()) as [key, value]}
         {@const isAgariPlayer =
           agariPlayer !== undefined && agariPlayer === key}
+        {@const isFurikomiPlayer =
+          furikomiPlayer !== undefined && furikomiPlayer === key}
         <Player
           {key}
           {value}
@@ -516,6 +521,7 @@
           {kakanHistory}
           {sutehaiPlayerSaved}
           {isAgariPlayer}
+          {isFurikomiPlayer}
           {isKyokuEnd}
         />
       {/each}
