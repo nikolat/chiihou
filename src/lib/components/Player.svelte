@@ -255,13 +255,6 @@
 </dd>
 
 <style>
-  .pai {
-    height: 30px;
-  }
-  .richi {
-    margin: auto 3px;
-    box-shadow: 1px 1px 1px 1px orange;
-  }
   dt {
     height: 130px;
     width: 15em;
@@ -284,10 +277,10 @@
   dd {
     height: 130px;
   }
-  dd .tehai {
+  dd div.tehai {
     display: inline-block;
   }
-  dd .kawa {
+  dd div.kawa {
     display: inline-block;
     line-height: 66%;
   }
