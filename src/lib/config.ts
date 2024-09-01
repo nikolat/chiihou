@@ -24,6 +24,8 @@ export const defaultRelays = [
 export const getRoboHashURL = (pubkey: string) => {
   return `https://robohash.org/${npubEncode(pubkey)}?set=set4`;
 };
+export const urlNIP07guide =
+  'https://welcome.nostr-jp.org/tutorial/nip-07.html';
 
 declare global {
   interface Window {

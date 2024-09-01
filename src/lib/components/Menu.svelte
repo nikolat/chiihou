@@ -2,7 +2,7 @@
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
-  import { mahjongPlayerPubkeys } from '$lib/config';
+  import { mahjongPlayerPubkeys, urlNIP07guide } from '$lib/config';
   import { getNpubWithNIP07, RxReqMode, sendMention, sleep } from '$lib/utils';
 
   export let rxNostr: RxNostr | undefined;
@@ -27,7 +27,14 @@
 </script>
 
 {#if loginPubkey === undefined}
-  <button on:click={() => getNpubWithNIP07(setLoginPubkey)}>NIP-07 Login</button
+  <button
+    on:click={() => {
+      if (window.nostr === undefined) {
+        window.location.href = urlNIP07guide;
+      } else {
+        getNpubWithNIP07(setLoginPubkey);
+      }
+    }}>NIP-07 Login</button
   >
 {:else}
   <button
