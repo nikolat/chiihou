@@ -19,6 +19,7 @@
   export let tehai: Map<string, string>;
   export let sutehai: Map<string, string>;
   export let lastEventsToReply: Map<string, NostrEvent>;
+  export let last_created_at: number;
   export let requestedCommand: string | undefined;
   export let kaze: Map<string, string>;
   export let points: Map<string, number>;
@@ -90,6 +91,7 @@
     {#if loginPubkey !== undefined && loginPubkey === key}<Command
         {requestedCommand}
         {lastEventsToReply}
+        {last_created_at}
         {rxNostr}
         {loginPubkey}
         {nakuKinds}

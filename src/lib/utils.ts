@@ -287,9 +287,11 @@ export const sendDapai = (
 export const sendMention = (
   rxNostr: RxNostr | undefined,
   message: string,
+  last_created_at: number,
   pubkey: string = mahjongServerPubkey,
 ) => {
   if (rxNostr === undefined) return;
+  const now = Math.floor(Date.now() / 1000);
   rxNostr.send({
     kind: 42,
     content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
@@ -297,6 +299,7 @@ export const sendMention = (
       ['e', mahjongRoomId, '', 'root'],
       ['p', pubkey, ''],
     ],
+    created_at: last_created_at < now ? now : last_created_at + 1,
   });
 };
 

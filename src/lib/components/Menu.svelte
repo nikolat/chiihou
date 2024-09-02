@@ -13,15 +13,16 @@
   export let setLoginPubkey: (value: string | undefined) => void;
   export let replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>;
   export let events: NostrEvent[];
+  export let last_created_at: number;
 
   const gamestartByForce = async () => {
     setSleepInterval(0);
-    sendMention(rxNostr, 'reset');
+    sendMention(rxNostr, 'reset', last_created_at);
     await sleep(500);
-    sendMention(rxNostr, 'gamestart');
+    sendMention(rxNostr, 'gamestart', last_created_at);
     for (let i = 0; i <= 2; i++) {
       await sleep(500);
-      sendMention(rxNostr, 'join', mahjongPlayerPubkeys[i]);
+      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[i]);
     }
   };
 </script>
@@ -79,52 +80,52 @@
 {#if loginPubkey !== undefined}
   <button
     on:click={() => {
-      sendMention(rxNostr, 'ping');
+      sendMention(rxNostr, 'ping', last_created_at);
     }}>Ping</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'help');
+      sendMention(rxNostr, 'help', last_created_at);
     }}>Help</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'reset');
+      sendMention(rxNostr, 'reset', last_created_at);
     }}>Reset</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'gamestart');
+      sendMention(rxNostr, 'gamestart', last_created_at);
     }}>GameStart</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'join');
+      sendMention(rxNostr, 'join', last_created_at);
     }}>Join</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'join', mahjongPlayerPubkeys[0]);
+      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[0]);
     }}>Join rinrin</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'join', mahjongPlayerPubkeys[1]);
+      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[1]);
     }}>Join chunchun</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'join', mahjongPlayerPubkeys[2]);
+      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[2]);
     }}>Join whanwhan</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'status');
+      sendMention(rxNostr, 'status', last_created_at);
     }}>Status</button
   >
   <button
     on:click={() => {
-      sendMention(rxNostr, 'next');
+      sendMention(rxNostr, 'next', last_created_at);
     }}>Next</button
   >
   <br />

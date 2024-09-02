@@ -73,6 +73,7 @@
     string,
     NostrEvent
   >();
+  let last_created_at: number = 0;
   let requestedCommand: string | undefined;
   let rxNostr: RxNostr | undefined;
   const defaultSleepInterval = 500;
@@ -131,6 +132,7 @@
 
   const replay = async (events: NostrEvent[], mode: RxReqMode) => {
     for (const ev of events) {
+      last_created_at = ev.created_at;
       if (ev.content.includes('GET')) {
         const p = ev.tags
           .find((tag) => tag.length >= 2 && tag[0] === 'p')
@@ -464,6 +466,7 @@
     {setLoginPubkey}
     {replay}
     {events}
+    {last_created_at}
   />
 </header>
 <main>
@@ -499,6 +502,7 @@
           {tehai}
           {sutehai}
           {lastEventsToReply}
+          {last_created_at}
           {requestedCommand}
           {kaze}
           {points}

@@ -10,6 +10,7 @@
 
   export let requestedCommand: string | undefined;
   export let lastEventsToReply: Map<string, NostrEvent>;
+  export let last_created_at: number;
   export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string;
   export let nakuKinds: Map<string, string[] | undefined>;
@@ -163,7 +164,7 @@
 {#if isKyokuEnd}
   <button
     on:click={() => {
-      sendMention(rxNostr, 'next');
+      sendMention(rxNostr, 'next', last_created_at);
     }}>Next</button
   >
 {/if}
