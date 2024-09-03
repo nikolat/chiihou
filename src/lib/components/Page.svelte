@@ -79,7 +79,6 @@
   const defaultSleepInterval = 500;
   let sleepInterval = defaultSleepInterval;
   let isStoppedReplay: boolean = false;
-  let isGameStarted: boolean = false;
   let isKyokuEnd: boolean = false;
 
   const setLoginPubkey = (value: string | undefined) => {
@@ -210,13 +209,12 @@
               .find((tag) => tag.length >= 2 && tag[0] === 'p')
               ?.at(1);
             if (p === undefined) return;
-            if (isGameStarted) {
+            if (0 < players.size && players.size < 4) {
               players.set(p, undefined);
               if (players.size === 4) {
                 fetchProfiles(rxNostr!, players, setPlayers);
               }
             } else {
-              isGameStarted = true;
               players = new Map<string, NostrEvent>();
               players.set(p, undefined);
             }
@@ -429,7 +427,6 @@
               i++;
             }
             result = r2.join('\n');
-            isGameStarted = false;
             break;
           default:
             break;
