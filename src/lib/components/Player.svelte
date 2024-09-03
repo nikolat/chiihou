@@ -77,8 +77,11 @@
   {kaze.get(key) ?? '?'}家
   {profile.display_name ?? ''} @{profile.name ?? ''}
   <br />
-  <button class="zap" title="Zap!" on:click={() => zap(key, defaultRelays)}
-    >⚡️</button
+  <button
+    class="zap"
+    title="Zap!"
+    disabled={!(profile.lud06 || profile.lud16)}
+    on:click={() => zap(key, defaultRelays)}>⚡️</button
   >
   {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
   <br /><img
