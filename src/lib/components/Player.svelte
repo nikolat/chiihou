@@ -51,6 +51,20 @@
     return (selfIndex - otherIndex - 1 + 4) % 4;
   };
 
+  const selectDapai = (
+    event: MouseEvent & {
+      currentTarget: EventTarget & HTMLButtonElement;
+    },
+  ) => {
+    for (const e of document.querySelectorAll<HTMLButtonElement>(
+      'button.selectable',
+    )) {
+      e.classList.remove('selectable');
+      e.disabled = true;
+    }
+    event.currentTarget.classList.remove('exist');
+  };
+
   $: profile = JSON.parse(value?.content || '{}');
   $: paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '');
   $: paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '');
@@ -58,6 +72,7 @@
     loginPubkey !== undefined &&
     lastEventsToReply.has(loginPubkey) &&
     requestedCommand === 'sutehai?';
+  $: isRichi = (richiJunme.get(loginPubkey ?? '') ?? -1) >= 0;
 </script>
 
 <dt
@@ -106,7 +121,7 @@
         {tsumohai}
         {nokori}
         {setSutehai}
-        isRichi={(richiJunme.get(loginPubkey) ?? -1) >= 0}
+        {isRichi}
         {callSendDapai}
         {isKyokuEnd}
       />{/if}
@@ -119,15 +134,19 @@
     {#each paigazouTehai?.at(0) ?? [] as pai}
       {#if isSutehaiTurn && loginPubkey === key}
         <button
-          class="dapai"
-          disabled={sutehaiCommand === 'richi' &&
+          class={'dapai exist' + (isRichi ? '' : ' selectable')}
+          disabled={(sutehaiCommand === 'richi' &&
             getShanten(
               removeHai(
                 addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''),
                 pai,
               ),
-            )[0] > 0}
-          on:click={() => callSendDapai(pai)}
+            )[0] > 0) ||
+            isRichi}
+          on:click={(event) => {
+            selectDapai(event);
+            callSendDapai(pai);
+          }}
           ><Pai
             {pai}
             isDora={doras.includes(pai)}
@@ -200,15 +219,19 @@
     {#if tsumohai.get(key)?.length ?? 0 > 0}
       {#if isSutehaiTurn && loginPubkey === key}
         <button
-          class="dapai"
-          disabled={sutehaiCommand === 'richi' &&
+          class="dapai exist selectable"
+          disabled={(sutehaiCommand === 'richi' &&
             getShanten(
               removeHai(
                 addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''),
                 tsumohai.get(key) ?? '',
               ),
-            )[0] > 0}
-          on:click={() => callSendDapai(tsumohai.get(key))}
+            )[0] > 0) ||
+            isRichi}
+          on:click={(event) => {
+            selectDapai(event);
+            callSendDapai(tsumohai.get(key));
+          }}
           ><Pai
             pai={tsumohai.get(key) ?? ''}
             isDora={doras.includes(tsumohai.get(key) ?? '')}
@@ -307,9 +330,17 @@
     height: 30px;
     cursor: pointer;
   }
-  button.dapai:disabled {
+  button.dapai.selectable:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+  button.dapai:not(.exist):disabled {
+    cursor: default;
+    opacity: 0;
+  }
+  .tehai button.dapai.exist:not(.selectable):disabled {
+    cursor: default;
+    opacity: 1;
   }
   @media all and (min-width: 480px) {
     dt {
