@@ -80,6 +80,7 @@
   let sleepInterval = defaultSleepInterval;
   let isStoppedReplay: boolean = false;
   let isKyokuEnd: boolean = false;
+  let isGameEnd: boolean = false;
 
   const setLoginPubkey = (value: string | undefined) => {
     loginPubkey = value;
@@ -222,6 +223,7 @@
             if (mG === null) return;
             const seki: number = ['東', '南', '西', '北'].indexOf(mG[1]);
             sekijun[seki] = p;
+            isGameEnd = false;
             break;
           case 'kyokustart':
             bafu = m[2];
@@ -427,6 +429,7 @@
               i++;
             }
             result = r2.join('\n');
+            isGameEnd = true;
             break;
           default:
             break;
@@ -482,6 +485,7 @@
       {chatEvents}
       {chatMembers}
       {rxNostr}
+      {isGameEnd}
     />
   </section>
   <section id="players">

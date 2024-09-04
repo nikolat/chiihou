@@ -1,10 +1,15 @@
 <script lang="ts">
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
+  import { awayuki_mahjong_emojis, sendChatMessage, zap } from '$lib/utils';
+  import {
+    chatHashtag,
+    defaultRelays,
+    getRoboHashURL,
+    mahjongServerPubkey,
+  } from '$lib/config';
   import { stringToArrayPlain } from '$lib/mjlib/mj_common';
-  import { awayuki_mahjong_emojis, sendChatMessage } from '$lib/utils';
   import Pai from '$lib/components/Pai.svelte';
-  import { chatHashtag, getRoboHashURL } from '$lib/config';
 
   export let bafu: string | undefined;
   export let kyoku: number | undefined;
@@ -18,6 +23,7 @@
   export let chatEvents: NostrEvent[];
   export let chatMembers: Map<string, NostrEvent>;
   export let rxNostr: RxNostr | undefined;
+  export let isGameEnd: boolean;
 
   let inputText: string;
 </script>
@@ -83,6 +89,14 @@
 </div>
 <div class="info result">
   {result ?? ''}
+  {#if isGameEnd}
+    <br />
+    <button
+      class="zap"
+      title="Zap!"
+      on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button
+    >
+  {/if}
 </div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
