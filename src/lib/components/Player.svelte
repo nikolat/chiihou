@@ -220,14 +220,13 @@
       {#if isSutehaiTurn && loginPubkey === key}
         <button
           class="dapai exist selectable"
-          disabled={(sutehaiCommand === 'richi' &&
+          disabled={sutehaiCommand === 'richi' &&
             getShanten(
               removeHai(
                 addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''),
                 tsumohai.get(key) ?? '',
               ),
-            )[0] > 0) ||
-            isRichi}
+            )[0] > 0}
           on:click={(event) => {
             selectDapai(event);
             callSendDapai(tsumohai.get(key));
