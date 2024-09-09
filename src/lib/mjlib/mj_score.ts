@@ -54,7 +54,7 @@ export const getScore = (
     composition_group_first = composition[0].split(',');
     atama_hai = stringToArray(composition_group_first[0])[0];
     for (let i = 1; i < composition_group_first.length; i++) {
-      const c = composition_group_first[i];
+      const c = composition_group_first[i].replaceAll(/[<>\(\)]/g, '');
       mentsu.push(stringToArray(c));
     }
   }
