@@ -183,12 +183,19 @@
       {@const sutehai = furoHistory.get(key)?.at(index)?.sutehai ?? ''}
       {@const sutehaiPlayer = furoHistory.get(key)?.at(index)?.pubkey ?? ''}
       {@const pa = stringToArrayPlain(pai)}
+      {@const paWithoutSutehai = stringToArrayPlain(pai.replace(sutehai, ''))}
       {@const sutehaiPlayerIndex = getSekijunIndex(sutehaiPlayer)}
       {@const isKakan = kakanHistory.get(key)?.includes(sutehai) ?? false}
       {#each pa as p, i}
+        {@const pai =
+          i === sutehaiPlayerIndex
+            ? sutehai
+            : i < sutehaiPlayerIndex
+              ? p
+              : paWithoutSutehai[i - 1]}
         <Pai
-          pai={i === sutehaiPlayerIndex ? sutehai : p}
-          isDora={doras.includes(p)}
+          {pai}
+          isDora={doras.includes(pai)}
           isRemoved={false}
           isNaku={false}
           isAtari={false}
