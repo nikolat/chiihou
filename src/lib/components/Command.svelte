@@ -25,6 +25,7 @@
   export let isRichi: boolean;
   export let callSendDapai: (pai: string | undefined) => void;
   export let isKyokuEnd: boolean;
+  export let isGameEnd: boolean;
 
   const sendReply = (message: string) => {
     const ev = lastEventsToReply.get(loginPubkey);
@@ -161,7 +162,7 @@
     >
   {/if}
 {/if}
-{#if isKyokuEnd}
+{#if isKyokuEnd && !isGameEnd}
   <button
     on:click={() => {
       sendMention(rxNostr, 'next', last_created_at);

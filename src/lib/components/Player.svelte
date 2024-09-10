@@ -44,6 +44,7 @@
   export let isAgariPlayer: boolean;
   export let isFurikomiPlayer: boolean;
   export let isKyokuEnd: boolean;
+  export let isGameEnd: boolean;
 
   const getSekijunIndex = (pubkey: string): number => {
     const selfIndex = sekijun.indexOf(key);
@@ -124,6 +125,7 @@
         {isRichi}
         {callSendDapai}
         {isKyokuEnd}
+        {isGameEnd}
       />{/if}
     <br />
     {say.get(key) ? `＜ [${say.get(key)}]` : ''}

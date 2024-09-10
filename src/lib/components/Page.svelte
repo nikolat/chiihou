@@ -528,6 +528,7 @@
           {isAgariPlayer}
           {isFurikomiPlayer}
           {isKyokuEnd}
+          {isGameEnd}
         />
       {/each}
     </dl>
