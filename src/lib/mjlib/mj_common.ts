@@ -34,12 +34,8 @@ export const stringToArray = (tehai: string): string[] => {
 };
 
 //配列に変換(副露を分離)
-export const stringToArrayWithFuro = (
-  tehai: string,
-): [string[], string[], string[]] => {
-  const m = tehai.match(
-    /^(([1-9][mspz])*)(<([1-9][mspz]){3,4}>|\(([1-9][mspz]){4}\))*$/,
-  );
+export const stringToArrayWithFuro = (tehai: string): [string[], string[], string[]] => {
+  const m = tehai.match(/^(([1-9][mspz])*)(<([1-9][mspz]){3,4}>|\(([1-9][mspz]){4}\))*$/);
   if (m === null) {
     throw new TypeError(`${tehai} is invalid`);
   }
@@ -65,19 +61,14 @@ export const stringToArrayWithFuro = (
 //配列に変換(副露を区別しない)
 export const stringToArrayPlain = (tehai: string): string[] => {
   const [hai_normal, hai_furo, hai_ankan] = stringToArrayWithFuro(tehai);
-  return hai_normal.concat(
-    stringToArrayWithFuro(hai_furo.join('') + hai_ankan.join(''))[0],
-  );
+  return hai_normal.concat(stringToArrayWithFuro(hai_furo.join('') + hai_ankan.join(''))[0]);
 };
 
 export const addHai = (tehai: string, hai: string): string => {
   const [arTehaiBaseNormal, hai_furo, hai_ankan] = stringToArrayWithFuro(tehai);
   const arTehaiNewNormal = arTehaiBaseNormal.concat(hai);
   arTehaiNewNormal.sort(compareFn);
-  const strTehaiNew =
-    arTehaiNewNormal.join('') +
-    hai_furo.map((h) => `<${h}>`).join('') +
-    hai_ankan.map((h) => `(${h})`).join('');
+  const strTehaiNew = arTehaiNewNormal.join('') + hai_furo.map((h) => `<${h}>`).join('') + hai_ankan.map((h) => `(${h})`).join('');
   return strTehaiNew;
 };
 
@@ -90,11 +81,7 @@ export const removeHai = (tehai: string, hai: string): string => {
 };
 
 //指定した要素を削除
-export const removeElementByName = (
-  ary: string[],
-  name: string,
-  count: number,
-) => {
+export const removeElementByName = (ary: string[], name: string, count: number) => {
   const ret: string[] = [];
   let n = 0;
   for (const elm of ary) {

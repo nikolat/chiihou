@@ -3,12 +3,7 @@
   import type { NostrEvent } from 'nostr-tools/pure';
   import { defaultRelays, getRoboHashURL } from '$lib/config';
   import { zap } from '$lib/utils';
-  import {
-    addHai,
-    removeHai,
-    stringToArrayPlain,
-    stringToArrayWithFuro,
-  } from '$lib/mjlib/mj_common';
+  import { addHai, removeHai, stringToArrayPlain, stringToArrayWithFuro } from '$lib/mjlib/mj_common';
   import { getShanten } from '$lib/mjlib/mj_shanten';
   import Command from '$lib/components/Command.svelte';
   import Pai from '$lib/components/Pai.svelte';
@@ -57,9 +52,7 @@
       currentTarget: EventTarget & HTMLButtonElement;
     },
   ) => {
-    for (const e of document.querySelectorAll<HTMLButtonElement>(
-      'button.selectable',
-    )) {
+    for (const e of document.querySelectorAll<HTMLButtonElement>('button.selectable')) {
       e.classList.remove('selectable');
       e.disabled = true;
     }
@@ -69,22 +62,16 @@
   $: profile = JSON.parse(value?.content || '{}');
   $: paigazouTehai = stringToArrayWithFuro(tehai.get(key) ?? '');
   $: paigazouSutehai = stringToArrayPlain(sutehai.get(key) ?? '');
-  $: isSutehaiTurn =
-    loginPubkey !== undefined &&
-    lastEventsToReply.has(loginPubkey) &&
-    requestedCommand === 'sutehai?';
+  $: isSutehaiTurn = loginPubkey !== undefined && lastEventsToReply.has(loginPubkey) && requestedCommand === 'sutehai?';
   $: isRichi = (richiJunme.get(loginPubkey ?? '') ?? -1) >= 0;
 </script>
 
 <dt
   class={'player' +
-    (lastEventsToReply.has(key) && requestedCommand === 'sutehai?'
-      ? ' sutehai_turn'
-      : '') +
+    (lastEventsToReply.has(key) && requestedCommand === 'sutehai?' ? ' sutehai_turn' : '') +
     (lastEventsToReply.has(key) &&
     requestedCommand === 'naku?' &&
-    (loginPubkey === undefined ||
-      (loginPubkey !== undefined && loginPubkey === key))
+    (loginPubkey === undefined || (loginPubkey !== undefined && loginPubkey === key))
       ? ' naku_turn'
       : '') +
     (isAgariPlayer ? ' is_agari' : '') +
@@ -93,19 +80,9 @@
   {kaze.get(key) ?? '?'}家
   {profile.display_name ?? ''} @{profile.name ?? ''}
   <br />
-  <button
-    class="zap"
-    title="Zap!"
-    disabled={!(profile.lud06 || profile.lud16)}
-    on:click={() => zap(key, defaultRelays)}>⚡️</button
-  >
+  <button class="zap" title="Zap!" disabled={!(profile.lud06 || profile.lud16)} on:click={() => zap(key, defaultRelays)}>⚡️</button>
   {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
-  <br /><img
-    class="player"
-    alt={profile.name ?? ''}
-    title={profile.name ?? ''}
-    src={profile.picture ?? getRoboHashURL(key)}
-  />
+  <br /><img class="player" alt={profile.name ?? ''} title={profile.name ?? ''} src={profile.picture ?? getRoboHashURL(key)} />
   <div class="command">
     {#if loginPubkey !== undefined && loginPubkey === key}<Command
         {requestedCommand}
@@ -138,12 +115,7 @@
         <button
           class={'dapai exist' + (isRichi ? '' : ' selectable')}
           disabled={(sutehaiCommand === 'richi' &&
-            getShanten(
-              removeHai(
-                addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''),
-                pai,
-              ),
-            )[0] > 0) ||
+            getShanten(removeHai(addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''), pai))[0] > 0) ||
             isRichi}
           on:click={(event) => {
             selectDapai(event);
@@ -155,9 +127,7 @@
             isRemoved={false}
             isNaku={false}
             isAtari={false}
-            isHidden={loginPubkey !== undefined &&
-              loginPubkey !== key &&
-              !pubkeysToOpenTehai.has(key)}
+            isHidden={loginPubkey !== undefined && loginPubkey !== key && !pubkeysToOpenTehai.has(key)}
             isRotated={false}
             isKakan={false}
             isSkipped={false}
@@ -170,9 +140,7 @@
           isRemoved={false}
           isNaku={false}
           isAtari={false}
-          isHidden={loginPubkey !== undefined &&
-            loginPubkey !== key &&
-            !pubkeysToOpenTehai.has(key)}
+          isHidden={loginPubkey !== undefined && loginPubkey !== key && !pubkeysToOpenTehai.has(key)}
           isRotated={false}
           isKakan={false}
           isSkipped={false}
@@ -187,12 +155,7 @@
       {@const sutehaiPlayerIndex = getSekijunIndex(sutehaiPlayer)}
       {@const isKakan = kakanHistory.get(key)?.includes(sutehai) ?? false}
       {#each pa as p, i}
-        {@const pai =
-          i === sutehaiPlayerIndex
-            ? sutehai
-            : i < sutehaiPlayerIndex
-              ? p
-              : paWithoutSutehai[i - 1]}
+        {@const pai = i === sutehaiPlayerIndex ? sutehai : i < sutehaiPlayerIndex ? p : paWithoutSutehai[i - 1]}
         <Pai
           {pai}
           isDora={doras.includes(pai)}
@@ -202,8 +165,7 @@
           isHidden={false}
           isRotated={pa.length === 3 || i <= 1
             ? i === sutehaiPlayerIndex
-            : (i === 3 && sutehaiPlayerIndex === 2) ||
-              (i === 2 && sutehaiPlayerIndex === 2 && isKakan)}
+            : (i === 3 && sutehaiPlayerIndex === 2) || (i === 2 && sutehaiPlayerIndex === 2 && isKakan)}
           isKakan={i === sutehaiPlayerIndex && isKakan}
           isSkipped={i - 1 === sutehaiPlayerIndex && isKakan}
         />
@@ -230,12 +192,7 @@
         <button
           class="dapai exist selectable"
           disabled={sutehaiCommand === 'richi' &&
-            getShanten(
-              removeHai(
-                addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''),
-                tsumohai.get(key) ?? '',
-              ),
-            )[0] > 0}
+            getShanten(removeHai(addHai(tehai.get(key) ?? '', tsumohai.get(key) ?? ''), tsumohai.get(key) ?? ''))[0] > 0}
           on:click={(event) => {
             selectDapai(event);
             callSendDapai(tsumohai.get(key));
@@ -246,9 +203,7 @@
             isRemoved={false}
             isNaku={false}
             isAtari={false}
-            isHidden={loginPubkey !== undefined &&
-              loginPubkey !== key &&
-              !pubkeysToOpenTehai.has(key)}
+            isHidden={loginPubkey !== undefined && loginPubkey !== key && !pubkeysToOpenTehai.has(key)}
             isRotated={false}
             isKakan={false}
             isSkipped={false}
@@ -261,9 +216,7 @@
           isRemoved={false}
           isNaku={false}
           isAtari={false}
-          isHidden={loginPubkey !== undefined &&
-            loginPubkey !== key &&
-            !pubkeysToOpenTehai.has(key)}
+          isHidden={loginPubkey !== undefined && loginPubkey !== key && !pubkeysToOpenTehai.has(key)}
           isRotated={false}
           isKakan={false}
           isSkipped={false}
@@ -281,11 +234,8 @@
         isNaku={requestedCommand === 'naku?' &&
           sutehaiPlayerSaved === key &&
           i === paigazouSutehai.length - 1 &&
-          (loginPubkey === undefined ||
-            (loginPubkey !== undefined && lastEventsToReply.has(loginPubkey)))}
-        isAtari={Array.from(say.values()).some((s) => s === 'ron') &&
-          sutehaiPlayerSaved === key &&
-          i === paigazouSutehai.length - 1}
+          (loginPubkey === undefined || (loginPubkey !== undefined && lastEventsToReply.has(loginPubkey)))}
+        isAtari={Array.from(say.values()).some((s) => s === 'ron') && sutehaiPlayerSaved === key && i === paigazouSutehai.length - 1}
         isHidden={false}
         isRotated={richiJunme.get(key) === i}
         isKakan={false}

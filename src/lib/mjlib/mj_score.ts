@@ -7,11 +7,7 @@ import {
   stringToArrayPlain,
   stringToArrayWithFuro,
 } from './mj_common.js';
-import {
-  getShantenChitoitsu,
-  getShantenKokushimusou,
-  getShantenNormal,
-} from './mj_shanten.js';
+import { getShantenChitoitsu, getShantenKokushimusou, getShantenNormal } from './mj_shanten.js';
 
 //点数の取得
 export const getScore = (
@@ -36,9 +32,7 @@ export const getScore = (
   hai_normal_all.sort(compareFn);
   const hai_plain: string[] = stringToArrayPlain(addHai(tehai, agari_hai));
   hai_plain.sort(compareFn);
-  const [shanten_normal, composition] = getShantenNormal(
-    addHai(tehai, agari_hai),
-  );
+  const [shanten_normal, composition] = getShantenNormal(addHai(tehai, agari_hai));
   let is_normal = true;
   if (shanten_normal !== -1) {
     composition.length = 0;
@@ -48,8 +42,7 @@ export const getScore = (
   let composition_group_first: string[];
   let atama_hai: string;
   let mentsu: string[][] = [];
-  const count_kantsu =
-    hai_furo.filter((s) => s.length === 8).length + hai_ankan.length;
+  const count_kantsu = hai_furo.filter((s) => s.length === 8).length + hai_ankan.length;
   if (is_normal) {
     composition_group_first = composition[0].split(',');
     atama_hai = stringToArray(composition_group_first[0])[0];
@@ -90,12 +83,9 @@ export const getScore = (
     }
   }
   if (is_normal && is_menzen && isChuren(hai_normal_all)) {
-    const n = hai_normal.reduce(
-      (accumulator: number, currentValue: string): number => {
-        return accumulator + (currentValue === agari_hai ? 1 : 0);
-      },
-      0,
-    );
+    const n = hai_normal.reduce((accumulator: number, currentValue: string): number => {
+      return accumulator + (currentValue === agari_hai ? 1 : 0);
+    }, 0);
     if (n === 1 || n === 3) {
       ret_yakuman.set('九蓮宝燈', 2);
     } else {
@@ -174,8 +164,7 @@ export const getScore = (
   let han_sub_max = -1;
   let fu_sub_max = -1;
   for (const comp of composition) {
-    const [fu_sub, ret_han_sub_tmp, ret_yakuman_sub_tmp] =
-      getYakuInfoFromComposition(is_tsumo, agari_hai, bafu_hai, jifu_hai, comp);
+    const [fu_sub, ret_han_sub_tmp, ret_yakuman_sub_tmp] = getYakuInfoFromComposition(is_tsumo, agari_hai, bafu_hai, jifu_hai, comp);
     let yakuman_sub = 0;
     let han_sub = 0;
     for (const [k, v] of ret_yakuman_sub_tmp) {
@@ -187,9 +176,7 @@ export const getScore = (
     if (
       yakuman_sub_max < yakuman_sub ||
       (yakuman_sub_max === yakuman_sub && han_sub_max < han_sub) ||
-      (yakuman_sub_max === yakuman_sub &&
-        han_sub_max === han_sub &&
-        fu_sub_max < fu_sub)
+      (yakuman_sub_max === yakuman_sub && han_sub_max === han_sub && fu_sub_max < fu_sub)
     ) {
       yakuman_sub_max = yakuman_sub;
       han_sub_max = han_sub;
@@ -218,13 +205,7 @@ export const getScore = (
   if (ret_han.has('平和') && ret_han.has('門前清自摸和')) count_fu = 20;
   else if (ret_han.has('七対子')) count_fu = 25;
   else if (!ret_yakuman.has('国士無双')) count_fu = fu_sub_max;
-  const score = getScorePoint(
-    count_yakuman,
-    count_han,
-    count_dora,
-    count_fu,
-    is_oya,
-  );
+  const score = getScorePoint(count_yakuman, count_han, count_dora, count_fu, is_oya);
   return [score, count_fu, ret_yakuman, ret_han];
 };
 
@@ -262,12 +243,7 @@ const getYakuInfoFromComposition = (
     }
   }
   //役満判定
-  const count_ankou = countAnkou(
-    mentsu_without_furo,
-    is_tsumo,
-    agari_hai,
-    atama_hai,
-  );
+  const count_ankou = countAnkou(mentsu_without_furo, is_tsumo, agari_hai, atama_hai);
   if (count_ankou == 4) {
     if (agari_hai === atama_hai) {
       ret_yakuman.set('四暗刻', 2);
@@ -315,17 +291,7 @@ const getYakuInfoFromComposition = (
   let fu: number;
   if (ret_han.has('平和') && is_tsumo) fu = 20;
   else if (ret_han.has('平和') && !is_tsumo) fu = 30;
-  else
-    fu = getFu(
-      atama_hai,
-      mentsu_without_furo,
-      mentsu_furo,
-      agari_hai,
-      bafu_hai,
-      jifu_hai,
-      is_tsumo,
-      is_menzen,
-    );
+  else fu = getFu(atama_hai, mentsu_without_furo, mentsu_furo, agari_hai, bafu_hai, jifu_hai, is_tsumo, is_menzen);
   return [fu, ret_han, ret_yakuman];
 };
 
@@ -379,10 +345,7 @@ const getFu = (
   let fu_machi;
   let fu_machi_add = -99;
   for (const m of mentsu_without_furo) {
-    if (m.includes(agari_hai))
-      machi_tatsu.push(
-        stringArrayToNumArray(removeElementByName(m, agari_hai, 1)),
-      );
+    if (m.includes(agari_hai)) machi_tatsu.push(stringArrayToNumArray(removeElementByName(m, agari_hai, 1)));
   }
   for (const mt of machi_tatsu) {
     if (mt[0] !== 1 && mt[0] + 1 === mt[1] && mt[1] !== 9) {
@@ -428,13 +391,7 @@ const getFu = (
 };
 
 //点数を取得
-const getScorePoint = (
-  count_yakuman: number,
-  count_han: number,
-  count_dora: number,
-  count_fu: number,
-  is_oya: boolean,
-): number => {
+const getScorePoint = (count_yakuman: number, count_han: number, count_dora: number, count_fu: number, is_oya: boolean): number => {
   let r: number;
   if (count_yakuman > 0) {
     r = 32000 * count_yakuman;
@@ -452,11 +409,7 @@ const getScorePoint = (
 };
 
 //符を用いた点数計算
-const getScorePointWithFu = (
-  count_han: number,
-  count_fu: number,
-  is_oya: boolean,
-): number => {
+const getScorePointWithFu = (count_han: number, count_fu: number, is_oya: boolean): number => {
   const key = `${count_fu}-${count_han}`;
   if (is_oya) {
     const d = new Map<string, number>([
@@ -564,20 +517,13 @@ const countPeko = (mentsu: string[][]): number => {
 };
 
 //役牌カウント
-const countYakuhai = (
-  hai_plain: string[],
-  bafu_hai: string,
-  jifu_hai: string,
-): number => {
+const countYakuhai = (hai_plain: string[], bafu_hai: string, jifu_hai: string): number => {
   let count_yakuhai = 0;
 
   for (const yakuhai of [bafu_hai, jifu_hai, '5z', '6z', '7z']) {
-    const n = hai_plain.reduce(
-      (accumulator: number, currentValue: string): number => {
-        return accumulator + (currentValue === yakuhai ? 1 : 0);
-      },
-      0,
-    );
+    const n = hai_plain.reduce((accumulator: number, currentValue: string): number => {
+      return accumulator + (currentValue === yakuhai ? 1 : 0);
+    }, 0);
     if (n >= 3) {
       count_yakuhai++;
     }
@@ -792,24 +738,16 @@ const isChinroutou = (hai_plain: string[]): boolean => {
 const countDora = (hai_plain: string[], dora: string[]): number => {
   let count = 0;
   for (const d of dora) {
-    const n = hai_plain.reduce(
-      (accumulator: number, currentValue: string): number => {
-        return accumulator + (currentValue === d ? 1 : 0);
-      },
-      0,
-    );
+    const n = hai_plain.reduce((accumulator: number, currentValue: string): number => {
+      return accumulator + (currentValue === d ? 1 : 0);
+    }, 0);
     count += n;
   }
   return count;
 };
 
 //暗刻カウント
-const countAnkou = (
-  mentsu: string[][],
-  is_tsumo: boolean,
-  agari_hai: string,
-  atama_hai: string,
-): number => {
+const countAnkou = (mentsu: string[][], is_tsumo: boolean, agari_hai: string, atama_hai: string): number => {
   //暗刻をカウント
   let count_ankou = 0;
   let is_ankou = false;
@@ -841,12 +779,9 @@ const isSanshokudoukou = (mentsu: string[][]): boolean => {
   }
   if (kotsu_number.length < 3) return false;
   for (let i = 0; i + 2 < kotsu_number.length; i++) {
-    const n = kotsu_number.reduce(
-      (accumulator: number, currentValue: number): number => {
-        return accumulator + (currentValue === kotsu_number[i] ? 1 : 0);
-      },
-      0,
-    );
+    const n = kotsu_number.reduce((accumulator: number, currentValue: number): number => {
+      return accumulator + (currentValue === kotsu_number[i] ? 1 : 0);
+    }, 0);
     if (n === 3) return true;
   }
   return false;
@@ -867,12 +802,9 @@ const isSanshokudoujun = (mentsu: string[][]): boolean => {
   }
   if (shuntsu_number.length < 3) return false;
   for (let i = 0; i + 2 < shuntsu_number.length; i++) {
-    const n = shuntsu_number.reduce(
-      (accumulator: number, currentValue: number): number => {
-        return accumulator + (currentValue === shuntsu_number[i] ? 1 : 0);
-      },
-      0,
-    );
+    const n = shuntsu_number.reduce((accumulator: number, currentValue: number): number => {
+      return accumulator + (currentValue === shuntsu_number[i] ? 1 : 0);
+    }, 0);
     if (n === 3) return true;
   }
   return false;
@@ -897,13 +829,7 @@ const isIkkitsuukan = (mentsu: string[][]): boolean => {
 };
 
 //平和判定
-const isPinfu = (
-  atama_hai: string,
-  mentsu: string[][],
-  agari_hai: string,
-  bafu_hai: string,
-  jifu_hai: string,
-): boolean => {
+const isPinfu = (atama_hai: string, mentsu: string[][], agari_hai: string, bafu_hai: string, jifu_hai: string): boolean => {
   //一般手の和了でない
   if (atama_hai === '') return false;
   //雀頭は役牌以外でないといけない
@@ -913,10 +839,7 @@ const isPinfu = (
   for (const m of mentsu) {
     //面子はすべて順子でなければならない
     if (m[0] === m[1]) return false;
-    if (m.includes(agari_hai))
-      machi_tatsu.push(
-        stringArrayToNumArray(removeElementByName(m, agari_hai, 1)),
-      );
+    if (m.includes(agari_hai)) machi_tatsu.push(stringArrayToNumArray(removeElementByName(m, agari_hai, 1)));
   }
   for (const mt of machi_tatsu) {
     if (mt[0] !== 1 && mt[0] + 1 === mt[1] && mt[1] != 9)

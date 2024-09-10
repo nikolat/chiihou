@@ -39,10 +39,7 @@
     });
   };
 
-  $: isNakuTurn =
-    loginPubkey !== undefined &&
-    lastEventsToReply.has(loginPubkey) &&
-    requestedCommand === 'naku?';
+  $: isNakuTurn = loginPubkey !== undefined && lastEventsToReply.has(loginPubkey) && requestedCommand === 'naku?';
 </script>
 
 {#if isNakuTurn}

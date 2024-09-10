@@ -1,20 +1,9 @@
-import {
-  createRxForwardReq,
-  createRxBackwardReq,
-  uniq,
-  type EventPacket,
-  type RxNostr,
-} from 'rx-nostr';
+import { createRxForwardReq, createRxBackwardReq, uniq, type EventPacket, type RxNostr } from 'rx-nostr';
 import { Subject } from 'rxjs';
 import type { NostrEvent } from 'nostr-tools/core';
 import { binarySearch } from 'nostr-tools/utils';
 import * as nip19 from 'nostr-tools/nip19';
-import {
-  addHai,
-  compareFn,
-  removeHai,
-  stringToArrayWithFuro,
-} from '$lib/mjlib/mj_common';
+import { addHai, compareFn, removeHai, stringToArrayWithFuro } from '$lib/mjlib/mj_common';
 import { getShanten } from '$lib/mjlib/mj_shanten';
 import { getKakanHai } from '$lib/mjlib/mj_ai';
 import { chatHashtag, mahjongRoomId, mahjongServerPubkey } from '$lib/config';
@@ -46,11 +35,7 @@ export const fetchEventsToReplay = (
         chatMembers.set(event.pubkey, event);
         setChatMembers(chatMembers);
       }
-    } else if (
-      event.tags.some(
-        (tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag,
-      )
-    ) {
+    } else if (event.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag)) {
       chatEvents = insertEventIntoDescendingList(chatEvents, event);
       setChatEvents(chatEvents);
     } else {
@@ -59,23 +44,14 @@ export const fetchEventsToReplay = (
     }
   };
   const complete1 = async () => {
-    const lastKyokuStartEvent = events.find((ev) =>
-      ev.tags.some(
-        (tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === 'kyokustart',
-      ),
-    );
+    const lastKyokuStartEvent = events.find((ev) => ev.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === 'kyokustart'));
     if (lastKyokuStartEvent === undefined) {
       console.warn('#kyokustart is not found');
       return;
     }
-    const chatMemberPubkeys = Array.from(
-      new Set<string>(chatEvents.map((ev) => ev.pubkey)),
-    );
+    const chatMemberPubkeys = Array.from(new Set<string>(chatEvents.map((ev) => ev.pubkey)));
     const rxReqB2 = createRxBackwardReq();
-    const subscriptionB2 = rxNostr
-      .use(rxReqB2)
-      .pipe(uniq(flushes$))
-      .subscribe({ next, complete: complete2 });
+    const subscriptionB2 = rxNostr.use(rxReqB2).pipe(uniq(flushes$)).subscribe({ next, complete: complete2 });
     rxReqB2.emit([
       {
         kinds: [42],
@@ -93,9 +69,7 @@ export const fetchEventsToReplay = (
     rxReqB2.over();
   };
   const complete2 = async () => {
-    const isKyokuEnd = events.some((ev) =>
-      ev.content.includes('NOTIFY kyokuend'),
-    );
+    const isKyokuEnd = events.some((ev) => ev.content.includes('NOTIFY kyokuend'));
     if (!isKyokuEnd) {
       setSleepInterval(0);
     }
@@ -106,20 +80,12 @@ export const fetchEventsToReplay = (
       .pipe(uniq(flushes$))
       .subscribe((packet) => {
         const event = packet.event;
-        if (
-          event.tags.some(
-            (tag) =>
-              tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag,
-          )
-        ) {
+        if (event.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag)) {
           chatEvents = insertEventIntoDescendingList(chatEvents, event);
           setChatEvents(chatEvents);
           if (!chatMembers.has(event.pubkey)) {
             const rxReqB3 = createRxBackwardReq();
-            const subscriptionB3 = rxNostr
-              .use(rxReqB3)
-              .pipe(uniq(flushes$))
-              .subscribe({ next });
+            const subscriptionB3 = rxNostr.use(rxReqB3).pipe(uniq(flushes$)).subscribe({ next });
             rxReqB3.emit({
               kinds: [0],
               authors: [event.pubkey],
@@ -147,10 +113,7 @@ export const fetchEventsToReplay = (
       },
     ]);
   };
-  const subscriptionB = rxNostr
-    .use(rxReqB)
-    .pipe(uniq(flushes$))
-    .subscribe({ next, complete: complete1 });
+  const subscriptionB = rxNostr.use(rxReqB).pipe(uniq(flushes$)).subscribe({ next, complete: complete1 });
   rxReqB.emit([
     {
       kinds: [42],
@@ -193,10 +156,7 @@ export const fetchProfiles = (
   };
   const flushes$ = new Subject<void>();
   const rxReqB = createRxBackwardReq();
-  const subscriptionB = rxNostr
-    .use(rxReqB)
-    .pipe(uniq(flushes$))
-    .subscribe(next);
+  const subscriptionB = rxNostr.use(rxReqB).pipe(uniq(flushes$)).subscribe(next);
   rxReqB.emit({
     kinds: [0],
     authors: Array.from(players.keys()),
@@ -207,10 +167,7 @@ export const fetchProfiles = (
 
 export const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
 
-export const insertEventIntoDescendingList = (
-  sortedArray: NostrEvent[],
-  event: NostrEvent,
-): NostrEvent[] => {
+export const insertEventIntoDescendingList = (sortedArray: NostrEvent[], event: NostrEvent): NostrEvent[] => {
   const [idx, found] = binarySearch(sortedArray, (b) => {
     if (event.id === b.id) return 0;
     if (event.created_at === b.created_at) return event.id.localeCompare(b.id);
@@ -224,27 +181,21 @@ export const insertEventIntoDescendingList = (
 
 export const getTagsReply = (event: NostrEvent): string[][] => {
   const tagsReply: string[][] = [];
-  const tagRoot = event.tags.find(
-    (tag) => tag.length >= 4 && tag[0] === 'e' && tag[3] === 'root',
-  );
+  const tagRoot = event.tags.find((tag) => tag.length >= 4 && tag[0] === 'e' && tag[3] === 'root');
   if (tagRoot !== undefined) {
     tagsReply.push(tagRoot);
     tagsReply.push(['e', event.id, '', 'reply']);
   } else {
     tagsReply.push(['e', event.id, '', 'root']);
   }
-  for (const tag of event.tags.filter(
-    (tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] !== event.pubkey,
-  )) {
+  for (const tag of event.tags.filter((tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] !== event.pubkey)) {
     tagsReply.push(tag);
   }
   tagsReply.push(['p', event.pubkey, '']);
   return tagsReply;
 };
 
-export const getNpubWithNIP07 = async (
-  setLoginPubkey: (value: string | undefined) => void,
-): Promise<void> => {
+export const getNpubWithNIP07 = async (setLoginPubkey: (value: string | undefined) => void): Promise<void> => {
   const nostr = window.nostr;
   let pubkey: string | undefined;
   if (nostr?.getPublicKey) {
@@ -278,8 +229,7 @@ export const sendDapai = (
     kind: 42,
     content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
     tags: getTagsReply(eventToReply),
-    created_at:
-      eventToReply.created_at < now ? now : eventToReply.created_at + 1,
+    created_at: eventToReply.created_at < now ? now : eventToReply.created_at + 1,
   });
   setSutehaiCommand('sutehai');
 };
@@ -303,10 +253,7 @@ export const sendMention = (
   });
 };
 
-export const sendChatMessage = (
-  rxNostr: RxNostr | undefined,
-  message: string,
-) => {
+export const sendChatMessage = (rxNostr: RxNostr | undefined, message: string) => {
   if (rxNostr === undefined) return;
   rxNostr.send({
     kind: 42,
@@ -318,11 +265,7 @@ export const sendChatMessage = (
   });
 };
 
-export const setFuro = (
-  tehai: string,
-  sute: string,
-  haiUsed: string,
-): string => {
+export const setFuro = (tehai: string, sute: string, haiUsed: string): string => {
   tehai = removeHai(tehai, haiUsed);
   tehai = addFuro(tehai, sute + haiUsed, '<', '>');
   return tehai;
@@ -339,12 +282,7 @@ export const setAnkan = (tehai: string, ankanHai: string): string => {
   return tehai;
 };
 
-const addFuro = (
-  tehai: string,
-  furo: string,
-  s1: string,
-  s2: string,
-): string => {
+const addFuro = (tehai: string, furo: string, s1: string, s2: string): string => {
   const sortedFuro = stringToArrayWithFuro(furo)[0];
   sortedFuro.sort(compareFn);
   const strFuro = sortedFuro.join('');
@@ -366,11 +304,7 @@ export const canTsumo = (tehai: string, atariHai: string): boolean => {
 };
 
 //TODO: もっとちゃんとチェック
-export const canAnkan = (
-  tehai: string,
-  tsumoHai: string,
-  nokori: number,
-): boolean => {
+export const canAnkan = (tehai: string, tsumoHai: string, nokori: number): boolean => {
   if (nokori === 0) return false;
   const arAnkanHai: string[] = getAnkanHai(addHai(tehai, tsumoHai));
   if (arAnkanHai.length === 0) return false;
@@ -387,11 +321,7 @@ export const getAnkanHai = (hai: string): string[] => {
 };
 
 //TODO: もっとちゃんとチェック
-export const canKakan = (
-  tehai: string,
-  tsumoHai: string,
-  nokori: number,
-): boolean => {
+export const canKakan = (tehai: string, tsumoHai: string, nokori: number): boolean => {
   if (nokori === 0) return false;
   const arKakanHai: string[] = getKakanHai(addHai(tehai, tsumoHai));
   if (arKakanHai.length > 0) return true;

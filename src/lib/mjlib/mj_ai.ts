@@ -1,10 +1,4 @@
-import {
-  addHai,
-  compareFn,
-  getDoraFromDorahyouji,
-  removeHai,
-  stringToArrayWithFuro,
-} from './mj_common.js';
+import { addHai, compareFn, getDoraFromDorahyouji, removeHai, stringToArrayWithFuro } from './mj_common.js';
 import { getMachi } from './mj_machi.js';
 import { getScore } from './mj_score.js';
 import { getShanten, getShantenYaku, removeKoritsuHai } from './mj_shanten.js';
@@ -21,14 +15,8 @@ export const naniwokiru = (
   strVisiblePai: string,
 ): string => {
   const arVisiblePai: string[] = stringToArrayWithFuro(strVisiblePai)[0];
-  const arVisibleNum = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
-  ];
-  const sortCode =
-    '1m,2m,3m,4m,5m,6m,7m,8m,9m,1p,2p,3p,4p,5p,6p,7p,8p,9p,1s,2s,3s,4s,5s,6s,7s,8s,9s,1z,2z,3z,4z,5z,6z,7z'.split(
-      ',',
-    );
+  const arVisibleNum = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const sortCode = '1m,2m,3m,4m,5m,6m,7m,8m,9m,1p,2p,3p,4p,5p,6p,7p,8p,9p,1s,2s,3s,4s,5s,6s,7s,8s,9s,1z,2z,3z,4z,5z,6z,7z'.split(',');
   for (const p of arVisiblePai) {
     arVisibleNum[sortCode.indexOf(p)]++;
   }
@@ -52,14 +40,7 @@ export const naniwokiru = (
       const arMachi = stringToArrayWithFuro(getMachi(strTehaiRemoved))[0];
       for (const machi of arMachi) {
         const isTsumo = true; //ツモった場合を想定
-        const score = getScore(
-          strTehaiRemoved,
-          machi,
-          strBafuhai,
-          strJifuhai,
-          arDora.join(''),
-          isTsumo,
-        )[0];
+        const score = getScore(strTehaiRemoved, machi, strBafuhai, strJifuhai, arDora.join(''), isTsumo)[0];
         if (score > 0) {
           const nNokori = 4 - arVisibleNum[sortCode.indexOf(machi)];
           machiPoint += score * nNokori;
@@ -77,8 +58,7 @@ export const naniwokiru = (
           const arTatsu = [];
           if (ap[0] !== '') {
             //雀頭
-            const nNokori =
-              4 - arVisibleNum[sortCode.indexOf(ap[0].slice(0, 2))];
+            const nNokori = 4 - arVisibleNum[sortCode.indexOf(ap[0].slice(0, 2))];
             elementPoint += 20 * nNokori;
           }
           ap.shift();
@@ -97,15 +77,12 @@ export const naniwokiru = (
             const color = tatsu.slice(1, 2);
             if (t1 !== 1 && t1 + 1 === t2 && t2 !== 9) {
               //両面
-              const nNokori1 =
-                4 - arVisibleNum[sortCode.indexOf(`${t1 - 1}${color}`)];
-              const nNokori2 =
-                4 - arVisibleNum[sortCode.indexOf(`${t2 + 1}${color}`)];
+              const nNokori1 = 4 - arVisibleNum[sortCode.indexOf(`${t1 - 1}${color}`)];
+              const nNokori2 = 4 - arVisibleNum[sortCode.indexOf(`${t2 + 1}${color}`)];
               elementPoint += 10 * (nNokori1 + nNokori2);
             } else if (t1 === t2) {
               //対子
-              const nNokori =
-                4 - arVisibleNum[sortCode.indexOf(`${t1}${color}`)];
+              const nNokori = 4 - arVisibleNum[sortCode.indexOf(`${t1}${color}`)];
               elementPoint += 20 * nNokori;
             } else if ((t1 === 1 && t2 === 2) || (t1 === 8 && t2 === 9)) {
               //辺張
@@ -118,8 +95,7 @@ export const naniwokiru = (
               elementPoint += 10 * nNokori - 5;
             } else {
               //嵌張
-              const nNokori =
-                4 - arVisibleNum[sortCode.indexOf(`${t1 + 1}${color}`)];
+              const nNokori = 4 - arVisibleNum[sortCode.indexOf(`${t1 + 1}${color}`)];
               elementPoint += 10 * nNokori;
             }
           }
@@ -157,14 +133,7 @@ export const naniwokiru = (
         }
       }
     }
-    const dahaiPoint =
-      shantenPoint +
-      machiPoint +
-      elementMaxPoint +
-      koritsuPoint +
-      furitenPoint +
-      doraPoint +
-      genbutsuPoint;
+    const dahaiPoint = shantenPoint + machiPoint + elementMaxPoint + koritsuPoint + furitenPoint + doraPoint + genbutsuPoint;
     if (point < dahaiPoint) {
       point = dahaiPoint;
       arDahai = [sutehai];
@@ -186,13 +155,7 @@ export const getAnkanHaiBest = (strTsumo: string, isRichi: boolean): string => {
   return '';
 };
 
-export const getKakanHaiBest = (
-  tehai: string,
-  tsumoHai: string,
-  bafuHai: string,
-  jifuHai: string,
-  aryPlayerRichi: number[],
-): string => {
+export const getKakanHaiBest = (tehai: string, tsumoHai: string, bafuHai: string, jifuHai: string, aryPlayerRichi: number[]): string => {
   //誰かがリーチしていたらカンしない
   for (const p of aryPlayerRichi) {
     if (p >= 0) return '';
@@ -202,10 +165,7 @@ export const getKakanHaiBest = (
   const shantenBefore = getShantenYaku(tehai, bafuHai, jifuHai)[0];
   const arKakanHaiUseful: string[] = [];
   for (const h of arKakanHai) {
-    let strTehai = tehaiAddTsumo.replace(
-      `<${h.repeat(3)}>`,
-      `<${h.repeat(4)}>`,
-    );
+    let strTehai = tehaiAddTsumo.replace(`<${h.repeat(3)}>`, `<${h.repeat(4)}>`);
     strTehai = removeHai(strTehai, h);
     const shantenAfter = getShantenYaku(strTehai, bafuHai, jifuHai)[0];
     if (shantenAfter <= shantenBefore) arKakanHaiUseful.push(h);
@@ -254,14 +214,7 @@ export const shouldRichi = (
   const strDora = arDora.join('');
   const isTsumo = true;
   for (const machi of arMachi) {
-    const score = getScore(
-      tehaiNew,
-      machi,
-      strBafuhai,
-      strJifuhai,
-      strDora,
-      isTsumo,
-    )[0];
+    const score = getScore(tehaiNew, machi, strBafuhai, strJifuhai, strDora, isTsumo)[0];
     if (score > 0) {
       return false;
     }
@@ -269,13 +222,7 @@ export const shouldRichi = (
   return true;
 };
 
-export const canRichi = (
-  tehai: string,
-  strTsumo: string,
-  isRichi: boolean,
-  nokori: number,
-  sutehai?: string,
-): boolean => {
+export const canRichi = (tehai: string, strTsumo: string, isRichi: boolean, nokori: number, sutehai?: string): boolean => {
   let tehai2 = addHai(tehai, strTsumo);
   if (sutehai !== undefined) {
     tehai2 = removeHai(tehai2, sutehai);
@@ -296,13 +243,7 @@ export const countKantsu = (tehai: string) => {
   return furo.filter((s) => s.length === 8).length + ankan.length;
 };
 
-export const shouldPon = (
-  tehai: string,
-  sutehai: string,
-  bafuHai: string,
-  jifuHai: string,
-  arRichiJunme: number[],
-): boolean => {
+export const shouldPon = (tehai: string, sutehai: string, bafuHai: string, jifuHai: string, arRichiJunme: number[]): boolean => {
   //誰かがリーチしていたら鳴かない
   if (arRichiJunme.some((e) => e >= 0)) return false;
   const h = sutehai;
@@ -316,13 +257,7 @@ export const shouldPon = (
   return false;
 };
 
-export const getChiMaterialBest = (
-  tehai: string,
-  sutehai: string,
-  bafuHai: string,
-  jifuHai: string,
-  arRichiJunme: number[],
-): string => {
+export const getChiMaterialBest = (tehai: string, sutehai: string, bafuHai: string, jifuHai: string, arRichiJunme: number[]): string => {
   //誰かがリーチしていたら鳴かない
   if (arRichiJunme.some((e) => e >= 0)) return '';
   const arChi: string[] = getChiMaterial(tehai, sutehai);
@@ -357,8 +292,7 @@ export const getChiMaterial = (tehai: string, sutehai: string): string[] => {
     [n - 1, n + 1],
     [n + 1, n + 2],
   ]) {
-    if (a.includes(n1) && a.includes(n2))
-      arRet.push(`${n1}${color}${n2}${color}`);
+    if (a.includes(n1) && a.includes(n2)) arRet.push(`${n1}${color}${n2}${color}`);
   }
   return arRet;
   //喰い替え禁止ルールでは手配が禁止牌のみの場合は除外すべきだが、レアケースのため未実装

@@ -18,22 +18,14 @@
     sleep,
     zap,
   } from '$lib/utils';
-  import {
-    addHai,
-    getDoraFromDorahyouji,
-    removeHai,
-    stringToArrayPlain,
-  } from '$lib/mjlib/mj_common';
+  import { addHai, getDoraFromDorahyouji, removeHai, stringToArrayPlain } from '$lib/mjlib/mj_common';
   import Menu from '$lib/components/Menu.svelte';
   import Info from '$lib/components/Info.svelte';
   import Player from '$lib/components/Player.svelte';
 
   let events: NostrEvent[] = [];
   let chatEvents: NostrEvent[] = [];
-  let players: Map<string, NostrEvent | undefined> = new Map<
-    string,
-    NostrEvent | undefined
-  >();
+  let players: Map<string, NostrEvent | undefined> = new Map<string, NostrEvent | undefined>();
   let chatMembers: Map<string, NostrEvent> = new Map<string, NostrEvent>();
   let sekijun: string[] = [];
   let kaze: Map<string, string> = new Map<string, string>();
@@ -45,15 +37,9 @@
   let say: Map<string, string> = new Map<string, string>();
   let richiJunme: Map<string, number> = new Map<string, number>();
   let furoJunme: Map<string, number[]> = new Map<string, number[]>();
-  let furoHistory: Map<string, [{ sutehai: string; pubkey: string }]> = new Map<
-    string,
-    [{ sutehai: string; pubkey: string }]
-  >();
+  let furoHistory: Map<string, [{ sutehai: string; pubkey: string }]> = new Map<string, [{ sutehai: string; pubkey: string }]>();
   let kakanHistory: Map<string, string[]> = new Map<string, string[]>();
-  let nakuKinds: Map<string, string[] | undefined> = new Map<
-    string,
-    string[] | undefined
-  >();
+  let nakuKinds: Map<string, string[] | undefined> = new Map<string, string[] | undefined>();
   let bafu: string | undefined;
   let kyoku: number | undefined;
   let tsumibou: number | undefined;
@@ -69,10 +55,7 @@
   let sutehaiPlayerSaved: string = '';
   let sutehaiCommand: string = '';
   let loginPubkey: string | undefined;
-  let lastEventsToReply: Map<string, NostrEvent> = new Map<
-    string,
-    NostrEvent
-  >();
+  let lastEventsToReply: Map<string, NostrEvent> = new Map<string, NostrEvent>();
   let last_created_at: number = 0;
   let requestedCommand: string | undefined;
   let rxNostr: RxNostr | undefined;
@@ -120,29 +103,18 @@
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
-    fetchEventsToReplay(
-      rxNostr,
-      setEvents,
-      setChatEvents,
-      setChatMembers,
-      replay,
-      setSleepInterval,
-    );
+    fetchEventsToReplay(rxNostr, setEvents, setChatEvents, setChatMembers, replay, setSleepInterval);
   });
 
   const replay = async (events: NostrEvent[], mode: RxReqMode) => {
     for (const ev of events) {
       last_created_at = ev.created_at;
       if (ev.content.includes('GET')) {
-        const p = ev.tags
-          .find((tag) => tag.length >= 2 && tag[0] === 'p')
-          ?.at(1);
+        const p = ev.tags.find((tag) => tag.length >= 2 && tag[0] === 'p')?.at(1);
         if (p === undefined) return;
         lastEventsToReply.set(p, ev);
         lastEventsToReply = lastEventsToReply;
-        const m = ev.content.match(
-          /GET\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
-        );
+        const m = ev.content.match(/GET\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/);
         if (m === null) return;
         const command = m[1];
         requestedCommand = command;
@@ -153,9 +125,7 @@
             ks.push(m[i]);
             i++;
           }
-          const p = ev.tags
-            .find((tag) => tag.length >= 2 && tag[0] === 'p')
-            ?.at(1);
+          const p = ev.tags.find((tag) => tag.length >= 2 && tag[0] === 'p')?.at(1);
           if (p === undefined) return;
           nakuKinds.set(p, ks);
           nakuKinds = nakuKinds;
@@ -164,12 +134,7 @@
           if (p === loginPubkey && richiJunme.get(p) !== undefined) {
             const cTehai = tehai.get(loginPubkey)!;
             const cTsumohai = tsumohai.get(loginPubkey)!;
-            if (
-              !(
-                canTsumo(cTehai, cTsumohai) ||
-                canAnkan(cTehai, cTsumohai, nokori ?? 0)
-              )
-            ) {
+            if (!(canTsumo(cTehai, cTsumohai) || canAnkan(cTehai, cTsumohai, nokori ?? 0))) {
               //オートで自摸切り
               if (mode === RxReqMode.Forward) {
                 await sleep(defaultSleepInterval);
@@ -184,31 +149,19 @@
         await sleep(sleepInterval);
       }
       if (ev.content.includes('NOTIFY')) {
-        if (
-          !/gamestart|kyokustart|point/.test(ev.content) &&
-          sleepInterval !== 0
-        )
-          await sleep(sleepInterval);
+        if (!/gamestart|kyokustart|point/.test(ev.content) && sleepInterval !== 0) await sleep(sleepInterval);
         lastEventsToReply = new Map<string, NostrEvent>();
         requestedCommand = undefined;
-        const p = ev.tags
-          .find((tag) => tag.length >= 2 && tag[0] === 'p')
-          ?.at(1);
+        const p = ev.tags.find((tag) => tag.length >= 2 && tag[0] === 'p')?.at(1);
         if (p === undefined) return;
         nakuKinds.set(p, undefined);
-        const m = ev.content.match(
-          /NOTIFY\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/,
-        );
+        const m = ev.content.match(/NOTIFY\s(\S+)\s?(\S+)?\s?(\S+)?\s?(\S+)?\s?(\S+)?/);
         if (m === null) return;
         const command = m[1];
-        const pubkey: string | null = /^nostr:npub1\w{58}$/.test(m[2])
-          ? (nip19.decode(m[2].replace('nostr:', '')).data as string)
-          : null;
+        const pubkey: string | null = /^nostr:npub1\w{58}$/.test(m[2]) ? (nip19.decode(m[2].replace('nostr:', '')).data as string) : null;
         switch (command) {
           case 'gamestart':
-            const p = ev.tags
-              .find((tag) => tag.length >= 2 && tag[0] === 'p')
-              ?.at(1);
+            const p = ev.tags.find((tag) => tag.length >= 2 && tag[0] === 'p')?.at(1);
             if (p === undefined) return;
             if (0 < players.size && players.size < 4) {
               players.set(p, undefined);
@@ -236,10 +189,7 @@
             say = new Map<string, string>();
             richiJunme = new Map<string, number>();
             furoJunme = new Map<string, number[]>();
-            furoHistory = new Map<
-              string,
-              [{ sutehai: string; pubkey: string }]
-            >();
+            furoHistory = new Map<string, [{ sutehai: string; pubkey: string }]>();
             kakanHistory = new Map<string, string[]>();
             pointDiff = new Map<string, string>();
             nakuKinds = new Map<string, string[] | undefined>();
@@ -279,10 +229,7 @@
             break;
           case 'dora':
             const sayValues = Array.from(say.values());
-            if (
-              sayValues.length > 0 &&
-              sayValues.some((s) => ['tsumo', 'ron'].includes(s))
-            ) {
+            if (sayValues.length > 0 && sayValues.some((s) => ['tsumo', 'ron'].includes(s))) {
               uradorahyoujihai = (uradorahyoujihai ?? '') + m[2];
             } else {
               dorahyoujihai = (dorahyoujihai ?? '') + m[2];
@@ -302,10 +249,7 @@
           case 'sutehai':
             if (pubkey === null) return;
             const paiS = m[3];
-            let newTehai = addHai(
-              tehai.get(pubkey) ?? '',
-              tsumohai.get(pubkey) ?? '',
-            );
+            let newTehai = addHai(tehai.get(pubkey) ?? '', tsumohai.get(pubkey) ?? '');
             newTehai = removeHai(newTehai, paiS);
             tehai.set(pubkey, newTehai);
             tsumohai.set(pubkey, '');
@@ -364,16 +308,12 @@
                 tehai.set(pubkey, newTehai);
                 furoJunme.set(
                   sutehaiPlayerSaved,
-                  (furoJunme.get(sutehaiPlayerSaved) ?? []).concat(
-                    (sutehai.get(sutehaiPlayerSaved)?.length ?? 0) / 2 - 1,
-                  ),
+                  (furoJunme.get(sutehaiPlayerSaved) ?? []).concat((sutehai.get(sutehaiPlayerSaved)?.length ?? 0) / 2 - 1),
                 );
                 furoJunme = furoJunme;
                 const history = furoHistory.get(pubkey);
                 if (history === undefined) {
-                  furoHistory.set(pubkey, [
-                    { sutehai: sutehaiSaved, pubkey: sutehaiPlayerSaved },
-                  ]);
+                  furoHistory.set(pubkey, [{ sutehai: sutehaiSaved, pubkey: sutehaiPlayerSaved }]);
                 } else {
                   history.unshift({
                     sutehai: sutehaiSaved,
@@ -420,9 +360,7 @@
             let i = 0;
             const rank = ['🥇', '🥈', '🥉', '🏅'];
             const r2 = [];
-            const sortedScoreMap = new Map(
-              [...scoremap].sort((a, b) => b[1] - a[1]),
-            );
+            const sortedScoreMap = new Map([...scoremap].sort((a, b) => b[1] - a[1]));
             for (const [k, v] of sortedScoreMap) {
               const profile = JSON.parse(players.get(k)?.content || '{}');
               r2.push(`${rank[i]} @${profile.name ?? ''}: ${v}`);
@@ -438,20 +376,12 @@
     }
   };
 
-  $: doras = stringToArrayPlain(
-    getDoraFromDorahyouji(`${dorahyoujihai ?? ''}${uradorahyoujihai ?? ''}`),
-  );
+  $: doras = stringToArrayPlain(getDoraFromDorahyouji(`${dorahyoujihai ?? ''}${uradorahyoujihai ?? ''}`));
 </script>
 
 <svelte:head>
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
-  />
-  <script
-    type="module"
-    src="https://cdn.jsdelivr.net/npm/nostr-zap@1.1.0"
-  ></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+  <script type="module" src="https://cdn.jsdelivr.net/npm/nostr-zap@1.1.0"></script>
   <title>地鳳</title>
 </svelte:head>
 
@@ -492,10 +422,8 @@
     <h2>Players</h2>
     <dl class="players">
       {#each Array.from(players.entries()) as [key, value]}
-        {@const isAgariPlayer =
-          agariPlayer !== undefined && agariPlayer === key}
-        {@const isFurikomiPlayer =
-          furikomiPlayer !== undefined && furikomiPlayer === key}
+        {@const isAgariPlayer = agariPlayer !== undefined && agariPlayer === key}
+        {@const isFurikomiPlayer = furikomiPlayer !== undefined && furikomiPlayer === key}
         <Player
           {key}
           {value}
@@ -547,17 +475,9 @@
 </main>
 <footer>
   <a href={linkGitHub} target="_blank" rel="noopener noreferrer">GitHub</a>
-  <button
-    class="zap"
-    title="Zap!"
-    on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button
-  >
+  <button class="zap" title="Zap!" on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button>
   牌画像 (c)
-  <a
-    href="https://awayuki.github.io/emojis.html#mahjong"
-    target="_blank"
-    rel="noopener noreferrer">awayuki</a
-  >
+  <a href="https://awayuki.github.io/emojis.html#mahjong" target="_blank" rel="noopener noreferrer">awayuki</a>
 </footer>
 
 <style>

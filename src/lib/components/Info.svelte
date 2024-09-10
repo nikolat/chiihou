@@ -2,12 +2,7 @@
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
   import { awayuki_mahjong_emojis, sendChatMessage, zap } from '$lib/utils';
-  import {
-    chatHashtag,
-    defaultRelays,
-    getRoboHashURL,
-    mahjongServerPubkey,
-  } from '$lib/config';
+  import { chatHashtag, defaultRelays, getRoboHashURL, mahjongServerPubkey } from '$lib/config';
   import { stringToArrayPlain } from '$lib/mjlib/mj_common';
   import Pai from '$lib/components/Pai.svelte';
 
@@ -30,16 +25,9 @@
 
 <div class="info base">
   {bafu ?? '?'}{kyoku ?? 0}局
-  <img
-    src={awayuki_mahjong_emojis.mahjong_stick100}
-    alt="積み棒"
-    class="pai"
-  />x{tsumibou ?? 0}
-  <img
-    src={awayuki_mahjong_emojis.mahjong_stick1000}
-    alt="供託"
-    class="pai"
-  />x{kyoutaku === undefined ? 0 : kyoutaku / 1000} 残り{nokori ?? 0}枚
+  <img src={awayuki_mahjong_emojis.mahjong_stick100} alt="積み棒" class="pai" />x{tsumibou ?? 0}
+  <img src={awayuki_mahjong_emojis.mahjong_stick1000} alt="供託" class="pai" />x{kyoutaku === undefined ? 0 : kyoutaku / 1000} 残り{nokori ??
+    0}枚
   <br />
   {#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
       pai={p}
@@ -91,11 +79,7 @@
   {result ?? ''}
   {#if isGameEnd}
     <br />
-    <button
-      class="zap"
-      title="Zap!"
-      on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button
-    >
+    <button class="zap" title="Zap!" on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button>
   {/if}
 </div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->

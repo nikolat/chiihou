@@ -22,11 +22,7 @@
         (isAtari ? ' atari' : '')}
       alt={pai}
       src={getEmojiUrl(isHidden ? 'back' : pai)}
-    />{#if isRotated && isKakan}<img
-        class="pai"
-        alt={pai}
-        src={getEmojiUrl(pai)}
-      />
+    />{#if isRotated && isKakan}<img class="pai" alt={pai} src={getEmojiUrl(pai)} />
     {/if}
   </span>
 {/if}

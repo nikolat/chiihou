@@ -1,8 +1,4 @@
-import {
-  compareFn,
-  stringArrayToNumArray,
-  stringToArrayWithFuro,
-} from './mj_common.js';
+import { compareFn, stringArrayToNumArray, stringToArrayWithFuro } from './mj_common.js';
 import { getShanten } from './mj_shanten.js';
 
 //待ちの取得

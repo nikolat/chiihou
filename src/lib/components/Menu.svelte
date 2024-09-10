@@ -130,21 +130,9 @@
   >
   <br />
   <button on:click={gamestartByForce}
-    >GameStart With <img
-      class="player"
-      src="https://nikolat.github.io/avatar/rinrin.png"
-      alt="rinrin"
-    />
-    <img
-      class="player"
-      src="https://nikolat.github.io/avatar/chunchun.png"
-      alt="chunchun"
-    />
-    <img
-      class="player"
-      src="https://nikolat.github.io/avatar/whanwhan.png"
-      alt="whanwhan"
-    />
+    >GameStart With <img class="player" src="https://nikolat.github.io/avatar/rinrin.png" alt="rinrin" />
+    <img class="player" src="https://nikolat.github.io/avatar/chunchun.png" alt="chunchun" />
+    <img class="player" src="https://nikolat.github.io/avatar/whanwhan.png" alt="whanwhan" />
   </button>
 {/if}
 
