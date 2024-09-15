@@ -246,7 +246,7 @@
 
 <style>
   dt {
-    height: 130px;
+    height: 135px;
     width: 15em;
     overflow-y: auto;
   }
@@ -271,7 +271,7 @@
     margin-left: 64px;
   }
   dd {
-    height: 130px;
+    height: 135px;
   }
   dd div.tehai {
     display: inline-block;
