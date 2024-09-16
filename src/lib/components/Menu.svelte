@@ -7,6 +7,7 @@
 
   export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string | undefined;
+  export let status: string | undefined;
   export let isStoppedReplay: boolean;
   export let setIsStoppedReplay: (value: boolean) => void;
   export let setSleepInterval: (value: number) => void;
@@ -80,6 +81,53 @@
 {#if loginPubkey !== undefined}
   <button
     on:click={() => {
+      sendMention(rxNostr, 'reset', last_created_at);
+    }}>Reset</button
+  >
+  <button
+    disabled={!!status}
+    on:click={() => {
+      sendMention(rxNostr, 'gamestart', last_created_at);
+    }}>GameStart</button
+  >
+  <button
+    disabled={!status?.startsWith('募集中')}
+    on:click={() => {
+      sendMention(rxNostr, 'join', last_created_at);
+    }}>Join</button
+  >
+  <button
+    disabled={!status?.startsWith('募集中')}
+    on:click={() => {
+      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[0]);
+    }}>Join rinrin</button
+  >
+  <button
+    disabled={!status?.startsWith('募集中')}
+    on:click={() => {
+      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[1]);
+    }}>Join chunchun</button
+  >
+  <button
+    disabled={!status?.startsWith('募集中')}
+    on:click={() => {
+      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[2]);
+    }}>Join whanwhan</button
+  >
+  <button
+    disabled={status !== '対局中'}
+    on:click={() => {
+      sendMention(rxNostr, 'status', last_created_at);
+    }}>Status</button
+  >
+  <button
+    disabled={status !== 'next待ち'}
+    on:click={() => {
+      sendMention(rxNostr, 'next', last_created_at);
+    }}>Next</button
+  >
+  <button
+    on:click={() => {
       sendMention(rxNostr, 'ping', last_created_at);
     }}>Ping</button
   >
@@ -87,46 +135,6 @@
     on:click={() => {
       sendMention(rxNostr, 'help', last_created_at);
     }}>Help</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'reset', last_created_at);
-    }}>Reset</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'gamestart', last_created_at);
-    }}>GameStart</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'join', last_created_at);
-    }}>Join</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[0]);
-    }}>Join rinrin</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[1]);
-    }}>Join chunchun</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'join', last_created_at, mahjongPlayerPubkeys[2]);
-    }}>Join whanwhan</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'status', last_created_at);
-    }}>Status</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, 'next', last_created_at);
-    }}>Next</button
   >
   <br />
   <button on:click={gamestartByForce}

@@ -394,6 +394,7 @@
   <Menu
     {rxNostr}
     {loginPubkey}
+    {status}
     {isStoppedReplay}
     {setIsStoppedReplay}
     {setSleepInterval}
