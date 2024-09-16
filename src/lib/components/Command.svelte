@@ -46,12 +46,14 @@
 {#if isNakuTurn}
   naku?
   <br /><button
+    disabled={status !== '対局中'}
     on:click={() => {
       sendReply('no');
     }}>no</button
   >
   {#if nakuKinds.get(loginPubkey)?.includes('pon')}
     <br /><button
+      disabled={status !== '対局中'}
       on:click={() => {
         sendReply('pon');
       }}>pon</button
@@ -62,6 +64,7 @@
       {@const pai1 = cm.slice(0, 2)}
       {@const pai2 = cm.slice(2, 4)}
       <br /><button
+        disabled={status !== '対局中'}
         on:click={() => {
           sendReply(`chi ${pai1} ${pai2}`);
         }}>chi</button
@@ -90,6 +93,7 @@
   {/if}
   {#if nakuKinds.get(loginPubkey)?.includes('kan')}
     <br /><button
+      disabled={status !== '対局中'}
       on:click={() => {
         sendReply('kan');
       }}>kan</button
@@ -97,6 +101,7 @@
   {/if}
   {#if nakuKinds.get(loginPubkey)?.includes('ron')}
     <br /><button
+      disabled={status !== '対局中'}
       on:click={() => {
         sendReply('ron');
       }}>ron</button
@@ -109,6 +114,7 @@
   sutehai?
   {#each getAnkanHai(addHai(cTehai, cTsumohai)) as h}
     <br /><button
+      disabled={status !== '対局中'}
       on:click={() => {
         setSutehai('ankan');
         callSendDapai(h);
@@ -127,6 +133,7 @@
   {/each}
   {#each getKakanHai(addHai(cTehai, cTsumohai)) as h}
     <br /><button
+      disabled={status !== '対局中'}
       on:click={() => {
         setSutehai('kakan');
         callSendDapai(h);
@@ -145,7 +152,7 @@
   {/each}
   {#if nokori !== undefined && canRichi(cTehai, cTsumohai, isRichi, nokori)}
     <br /><button
-      disabled={sutehaiCommand === 'richi'}
+      disabled={status !== '対局中' || sutehaiCommand === 'richi'}
       on:click={() => {
         setSutehai('richi');
       }}>richi</button
