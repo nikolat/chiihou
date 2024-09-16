@@ -290,7 +290,8 @@
             if (t === undefined) return;
             if (paiOpen.length == 2) {
               //加槓
-              const newTehai = setKakan(t, paiOpen);
+              let newTehai = addHai(t, tsumohai.get(pubkey) ?? '');
+              newTehai = setKakan(newTehai, paiOpen);
               tehai.set(pubkey, newTehai);
               const history = kakanHistory.get(pubkey);
               if (history === undefined) {
@@ -303,7 +304,8 @@
               if (sutehaiSaved === '') {
                 //暗槓
                 const pai = paiOpen.slice(0, 2);
-                const newTehai = setAnkan(t, pai);
+                let newTehai = addHai(t, tsumohai.get(pubkey) ?? '');
+                newTehai = setAnkan(newTehai, pai);
                 tehai.set(pubkey, newTehai);
               } else {
                 //チー、ポン、大明槓
