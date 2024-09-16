@@ -444,8 +444,9 @@
           {kaze}
           {points}
           {pointDiff}
-          {loginPubkey}
           {rxNostr}
+          {loginPubkey}
+          {status}
           {nakuKinds}
           {sutehaiSaved}
           {doras}

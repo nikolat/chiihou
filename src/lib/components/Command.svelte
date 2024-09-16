@@ -13,6 +13,7 @@
   export let last_created_at: number;
   export let rxNostr: RxNostr | undefined;
   export let loginPubkey: string;
+  export let status: string | undefined;
   export let nakuKinds: Map<string, string[] | undefined>;
   export let tehai: Map<string, string>;
   export let sutehaiSaved: string;
@@ -161,6 +162,7 @@
 {/if}
 {#if isKyokuEnd && !isGameEnd}
   <button
+    disabled={status !== 'next待ち'}
     on:click={() => {
       sendMention(rxNostr, 'next', last_created_at);
     }}>Next</button

@@ -19,8 +19,9 @@
   export let kaze: Map<string, string>;
   export let points: Map<string, number>;
   export let pointDiff: Map<string, string>;
-  export let loginPubkey: string | undefined;
   export let rxNostr: RxNostr | undefined;
+  export let loginPubkey: string | undefined;
+  export let status: string | undefined;
   export let nakuKinds: Map<string, string[] | undefined>;
   export let sutehaiSaved: string;
   export let doras: string[];
@@ -90,6 +91,7 @@
         {last_created_at}
         {rxNostr}
         {loginPubkey}
+        {status}
         {nakuKinds}
         {tehai}
         {sutehaiSaved}

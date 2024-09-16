@@ -80,6 +80,7 @@
 >
 {#if loginPubkey !== undefined}
   <button
+    disabled={!status}
     on:click={() => {
       sendMention(rxNostr, 'reset', last_created_at);
     }}>Reset</button
