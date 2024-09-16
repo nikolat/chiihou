@@ -25,6 +25,7 @@
 
   let events: NostrEvent[] = [];
   let chatEvents: NostrEvent[] = [];
+  let status: string | undefined;
   let players: Map<string, NostrEvent | undefined> = new Map<string, NostrEvent | undefined>();
   let chatMembers: Map<string, NostrEvent> = new Map<string, NostrEvent>();
   let sekijun: string[] = [];
@@ -92,6 +93,9 @@
   const setChatEvents = (value: NostrEvent[]) => {
     chatEvents = value;
   };
+  const setStatus = (value: string) => {
+    status = value;
+  };
   const callSendDapai = (pai: string | undefined) => {
     if (pai === undefined) return;
     if (loginPubkey === undefined) return;
@@ -103,7 +107,7 @@
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
-    fetchEventsToReplay(rxNostr, setEvents, setChatEvents, setChatMembers, replay, setSleepInterval);
+    fetchEventsToReplay(rxNostr, setEvents, setChatEvents, setStatus, setChatMembers, replay, setSleepInterval);
   });
 
   const replay = async (events: NostrEvent[], mode: RxReqMode) => {
@@ -411,6 +415,7 @@
       {dorahyoujihai}
       {uradorahyoujihai}
       {doras}
+      {status}
       {result}
       {chatEvents}
       {chatMembers}

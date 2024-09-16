@@ -14,6 +14,7 @@
   export let dorahyoujihai: string | undefined;
   export let uradorahyoujihai: string | undefined;
   export let doras: string[];
+  export let status: string | undefined;
   export let result: string | undefined;
   export let chatEvents: NostrEvent[];
   export let chatMembers: Map<string, NostrEvent>;
@@ -76,7 +77,7 @@
   {/if}
 </div>
 <div class="info result">
-  {result ?? ''}
+  status: {status || '空席'}<br />{result ?? ''}
   {#if isGameEnd}
     <br />
     <button class="zap" title="Zap!" on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button>

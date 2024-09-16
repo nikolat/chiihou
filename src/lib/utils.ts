@@ -17,12 +17,14 @@ export const fetchEventsToReplay = (
   rxNostr: RxNostr,
   setEvents: (value: NostrEvent[]) => void,
   setChatEvents: (value: NostrEvent[]) => void,
+  setStatus: (value: string) => void,
   setChatMembers: (value: Map<string, NostrEvent>) => void,
   replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>,
   setSleepInterval: (value: number) => void,
 ) => {
   let events: NostrEvent[] = [];
   let chatEvents: NostrEvent[] = [];
+  let statusEvent: NostrEvent;
   const chatMembers: Map<string, NostrEvent> = new Map<string, NostrEvent>();
   const rxReqB = createRxBackwardReq();
   const now = Math.floor(Date.now() / 1000);
@@ -34,6 +36,11 @@ export const fetchEventsToReplay = (
       if (ev === undefined || ev.created_at < event.created_at) {
         chatMembers.set(event.pubkey, event);
         setChatMembers(chatMembers);
+      }
+    } else if (event.kind === 30315) {
+      if (statusEvent === undefined || statusEvent.created_at < event.created_at) {
+        statusEvent = event;
+        setStatus(statusEvent.content);
       }
     } else if (event.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag)) {
       chatEvents = insertEventIntoDescendingList(chatEvents, event);
@@ -93,6 +100,9 @@ export const fetchEventsToReplay = (
             });
             rxReqB3.over();
           }
+        } else if (event.kind === 30315) {
+          statusEvent = event;
+          setStatus(statusEvent.content);
         } else {
           events = insertEventIntoDescendingList(events, packet.event);
           setEvents(events);
@@ -104,6 +114,12 @@ export const fetchEventsToReplay = (
         kinds: [42],
         authors: [mahjongServerPubkey],
         '#e': [mahjongRoomId],
+        since: now,
+      },
+      {
+        kinds: [30315],
+        authors: [mahjongServerPubkey],
+        '#d': ['general'],
         since: now,
       },
       {
@@ -128,6 +144,13 @@ export const fetchEventsToReplay = (
       authors: [mahjongServerPubkey],
       '#e': [mahjongRoomId],
       '#t': ['kyokustart'],
+      limit: 1,
+      until: now,
+    },
+    {
+      kinds: [30315],
+      authors: [mahjongServerPubkey],
+      '#d': ['general'],
       limit: 1,
       until: now,
     },
