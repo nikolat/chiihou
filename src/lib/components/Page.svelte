@@ -290,9 +290,7 @@
             if (t === undefined) return;
             if (paiOpen.length == 2) {
               //加槓
-              let newTehai = addHai(t, tsumohai.get(pubkey) ?? '');
-              newTehai = setKakan(newTehai, paiOpen);
-              tehai.set(pubkey, newTehai);
+              tehai.set(pubkey, setKakan(t, paiOpen));
               const history = kakanHistory.get(pubkey);
               if (history === undefined) {
                 kakanHistory.set(pubkey, [paiOpen]);
