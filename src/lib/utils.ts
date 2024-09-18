@@ -81,6 +81,8 @@ export const fetchEventsToReplay = (
       setSleepInterval(0);
     }
     await replay(events.toReversed(), RxReqMode.Backward);
+    let eventsQueue: NostrEvent[] = [];
+    let timer: number;
     const rxReqF = createRxForwardReq();
     const subscriptionF = rxNostr
       .use(rxReqF)
@@ -106,7 +108,14 @@ export const fetchEventsToReplay = (
         } else {
           events = insertEventIntoDescendingList(events, packet.event);
           setEvents(events);
-          replay([packet.event], RxReqMode.Forward);
+          //稀にイベントが前後して到着する場合があるため近い時間に到着したイベントは溜めておきソートしてからreplayに送る
+          eventsQueue = insertEventIntoDescendingList(eventsQueue, packet.event);
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            const eventsQueueCopy = eventsQueue;
+            eventsQueue = [];
+            replay(eventsQueueCopy.toReversed(), RxReqMode.Forward);
+          }, 100);
         }
       });
     rxReqF.emit([
