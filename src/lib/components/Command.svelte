@@ -2,7 +2,6 @@
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
-  import { mahjongServerPubkey } from '$lib/config';
   import { canTsumo, getAnkanHai, getTagsReply, sendMention } from '$lib/utils';
   import { addHai } from '$lib/mjlib/mj_common';
   import { canRichi, getChiMaterial, getKakanHai } from '$lib/mjlib/mj_ai';
@@ -12,6 +11,8 @@
   export let lastEventsToReply: Map<string, NostrEvent>;
   export let last_created_at: number;
   export let rxNostr: RxNostr | undefined;
+  export let mahjongChannelId: string;
+  export let mahjongServerPubkey: string;
   export let loginPubkey: string;
   export let status: string | undefined;
   export let nakuKinds: Map<string, string[] | undefined>;
@@ -34,7 +35,7 @@
     const now = Math.floor(Date.now() / 1000);
     rxNostr?.send({
       kind: 42,
-      content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} naku? ${message}`,
+      content: `nostr:${nip19.npubEncode(ev.pubkey)} naku? ${message}`,
       tags: getTagsReply(ev),
       created_at: ev.created_at < now ? now : ev.created_at + 1,
     });
@@ -171,7 +172,7 @@
   <button
     disabled={status !== 'next待ち'}
     on:click={() => {
-      sendMention(rxNostr, 'next', last_created_at);
+      sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'next', last_created_at);
     }}>Next</button
   >
 {/if}

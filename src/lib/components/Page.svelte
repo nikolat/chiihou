@@ -4,7 +4,7 @@
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
   import { onMount } from 'svelte';
-  import { defaultRelays, linkGitHub, mahjongServerPubkey } from '$lib/config';
+  import { defaultRelays, linkGitHub, mahjongChannelIds, mahjongServerPubkeys } from '$lib/config';
   import {
     canAnkan,
     canTsumo,
@@ -23,6 +23,8 @@
   import Info from '$lib/components/Info.svelte';
   import Player from '$lib/components/Player.svelte';
 
+  const mahjongChannelId = mahjongChannelIds.at(0)!;
+  const mahjongServerPubkey = mahjongServerPubkeys.at(0)!;
   let events: NostrEvent[] = [];
   let chatEvents: NostrEvent[] = [];
   let status: string | undefined;
@@ -107,7 +109,17 @@
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
-    fetchEventsToReplay(rxNostr, setEvents, setChatEvents, setStatus, setChatMembers, replay, setSleepInterval);
+    fetchEventsToReplay(
+      rxNostr,
+      mahjongChannelId,
+      mahjongServerPubkey,
+      setEvents,
+      setChatEvents,
+      setStatus,
+      setChatMembers,
+      replay,
+      setSleepInterval,
+    );
   });
 
   const replay = async (events: NostrEvent[], mode: RxReqMode) => {
@@ -393,6 +405,8 @@
   <h1>地鳳</h1>
   <Menu
     {rxNostr}
+    {mahjongChannelId}
+    {mahjongServerPubkey}
     {loginPubkey}
     {status}
     {isStoppedReplay}
@@ -421,6 +435,8 @@
       {chatEvents}
       {chatMembers}
       {rxNostr}
+      {mahjongChannelId}
+      {mahjongServerPubkey}
       {isGameEnd}
     />
   </section>
@@ -443,6 +459,8 @@
           {points}
           {pointDiff}
           {rxNostr}
+          {mahjongChannelId}
+          {mahjongServerPubkey}
           {loginPubkey}
           {status}
           {nakuKinds}

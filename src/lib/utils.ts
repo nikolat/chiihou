@@ -6,7 +6,7 @@ import * as nip19 from 'nostr-tools/nip19';
 import { addHai, compareFn, removeHai, stringToArrayWithFuro } from '$lib/mjlib/mj_common';
 import { getShanten } from '$lib/mjlib/mj_shanten';
 import { getKakanHai } from '$lib/mjlib/mj_ai';
-import { chatHashtag, mahjongRoomId, mahjongServerPubkey } from '$lib/config';
+import { chatHashtag } from '$lib/config';
 
 export const enum RxReqMode {
   Backward,
@@ -15,6 +15,8 @@ export const enum RxReqMode {
 
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
+  mahjongChannelId: string,
+  mahjongServerPubkey: string,
   setEvents: (value: NostrEvent[]) => void,
   setChatEvents: (value: NostrEvent[]) => void,
   setStatus: (value: string) => void,
@@ -63,7 +65,7 @@ export const fetchEventsToReplay = (
       {
         kinds: [42],
         authors: [mahjongServerPubkey],
-        '#e': [mahjongRoomId],
+        '#e': [mahjongChannelId],
         since: lastKyokuStartEvent.created_at,
         until: now,
       },
@@ -122,7 +124,7 @@ export const fetchEventsToReplay = (
       {
         kinds: [42],
         authors: [mahjongServerPubkey],
-        '#e': [mahjongRoomId],
+        '#e': [mahjongChannelId],
         since: now,
       },
       {
@@ -143,7 +145,7 @@ export const fetchEventsToReplay = (
     {
       kinds: [42],
       authors: [mahjongServerPubkey],
-      '#e': [mahjongRoomId],
+      '#e': [mahjongChannelId],
       '#t': ['gamestart'],
       limit: 4,
       until: now,
@@ -151,7 +153,7 @@ export const fetchEventsToReplay = (
     {
       kinds: [42],
       authors: [mahjongServerPubkey],
-      '#e': [mahjongRoomId],
+      '#e': [mahjongChannelId],
       '#t': ['kyokustart'],
       limit: 1,
       until: now,
@@ -259,7 +261,7 @@ export const sendDapai = (
   const now = Math.floor(Date.now() / 1000);
   rxNostr.send({
     kind: 42,
-    content: `nostr:${nip19.npubEncode(mahjongServerPubkey)} sutehai? ${sutehaiCommand} ${pai}`,
+    content: `nostr:${nip19.npubEncode(eventToReply.pubkey)} sutehai? ${sutehaiCommand} ${pai}`,
     tags: getTagsReply(eventToReply),
     created_at: eventToReply.created_at < now ? now : eventToReply.created_at + 1,
   });
@@ -268,9 +270,10 @@ export const sendDapai = (
 
 export const sendMention = (
   rxNostr: RxNostr | undefined,
+  mahjongChannelId: string,
+  pubkey: string,
   message: string,
   last_created_at: number,
-  pubkey: string = mahjongServerPubkey,
 ) => {
   if (rxNostr === undefined) return;
   const now = Math.floor(Date.now() / 1000);
@@ -278,20 +281,20 @@ export const sendMention = (
     kind: 42,
     content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
     tags: [
-      ['e', mahjongRoomId, '', 'root'],
+      ['e', mahjongChannelId, '', 'root'],
       ['p', pubkey, ''],
     ],
     created_at: last_created_at < now ? now : last_created_at + 1,
   });
 };
 
-export const sendChatMessage = (rxNostr: RxNostr | undefined, message: string) => {
+export const sendChatMessage = (rxNostr: RxNostr | undefined, mahjongChannelId: string, message: string) => {
   if (rxNostr === undefined) return;
   rxNostr.send({
     kind: 42,
     content: `${message} #${chatHashtag}`,
     tags: [
-      ['e', mahjongRoomId, '', 'root'],
+      ['e', mahjongChannelId, '', 'root'],
       ['t', chatHashtag],
     ],
   });

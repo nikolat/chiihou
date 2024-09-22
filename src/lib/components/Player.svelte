@@ -20,6 +20,8 @@
   export let points: Map<string, number>;
   export let pointDiff: Map<string, string>;
   export let rxNostr: RxNostr | undefined;
+  export let mahjongChannelId: string;
+  export let mahjongServerPubkey: string;
   export let loginPubkey: string | undefined;
   export let status: string | undefined;
   export let nakuKinds: Map<string, string[] | undefined>;
@@ -90,6 +92,8 @@
         {lastEventsToReply}
         {last_created_at}
         {rxNostr}
+        {mahjongChannelId}
+        {mahjongServerPubkey}
         {loginPubkey}
         {status}
         {nakuKinds}

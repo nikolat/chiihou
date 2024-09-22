@@ -2,7 +2,7 @@
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
   import { awayuki_mahjong_emojis, sendChatMessage, zap } from '$lib/utils';
-  import { chatHashtag, defaultRelays, getRoboHashURL, mahjongServerPubkey } from '$lib/config';
+  import { chatHashtag, defaultRelays, getRoboHashURL } from '$lib/config';
   import { stringToArrayPlain } from '$lib/mjlib/mj_common';
   import Pai from '$lib/components/Pai.svelte';
 
@@ -19,6 +19,8 @@
   export let chatEvents: NostrEvent[];
   export let chatMembers: Map<string, NostrEvent>;
   export let rxNostr: RxNostr | undefined;
+  export let mahjongChannelId: string;
+  export let mahjongServerPubkey: string;
   export let isGameEnd: boolean;
 
   let inputText: string;
@@ -91,14 +93,14 @@
     bind:value={inputText}
     on:keydown={(e) => {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        sendChatMessage(rxNostr, inputText);
+        sendChatMessage(rxNostr, mahjongChannelId, inputText);
         inputText = '';
       }
     }}
   />
   <button
     on:click={() => {
-      sendChatMessage(rxNostr, inputText);
+      sendChatMessage(rxNostr, mahjongChannelId, inputText);
       inputText = '';
     }}
     disabled={!inputText}>Post</button

@@ -1,8 +1,8 @@
 import type { WindowNostr } from 'nostr-tools/nip07';
 import { npubEncode } from 'nostr-tools/nip19';
 
-export const mahjongRoomId = 'c8d5c2709a5670d6f621ac8020ac3e4fc3057a4961a15319f7c0818309407723';
-export const mahjongServerPubkey = '93e68a5f7bf6d35f0cb1288160e42ecdb3396b80bb686a528199dfc5e58ceb25';
+export const mahjongChannelIds = ['c8d5c2709a5670d6f621ac8020ac3e4fc3057a4961a15319f7c0818309407723'];
+export const mahjongServerPubkeys = ['93e68a5f7bf6d35f0cb1288160e42ecdb3396b80bb686a528199dfc5e58ceb25'];
 
 export const mahjongPlayerPubkeys = [
   '1cc73c7cc29a6c0070f39856fdb835bc9e6cbdf4dcdd207fa9eff8cf4d5699df',
