@@ -64,13 +64,22 @@
   let last_created_at: number = 0;
   let requestedCommand: string | undefined;
   let rxNostr: RxNostr | undefined;
+  const subscriptions: Subscription[] = [];
   const defaultSleepInterval = 500;
   let sleepInterval = defaultSleepInterval;
   let isStoppedReplay: boolean = false;
   let isKyokuEnd: boolean = false;
   let isGameEnd: boolean = false;
 
+  interface Subscription {
+    unsubscribe(): void;
+  }
+
   const reset = async () => {
+    for (const s of subscriptions) {
+      s.unsubscribe();
+    }
+    subscriptions.length = 0;
     sleepInterval = 0;
     await sleep(defaultSleepInterval);
     events = [];
@@ -114,6 +123,9 @@
     sleepInterval = defaultSleepInterval;
   };
 
+  const pushSubscription = (value: Subscription) => {
+    subscriptions.push(value);
+  };
   const setMahjongChannelId = (value: string) => {
     mahjongChannelId = value;
   };
@@ -172,6 +184,7 @@
       rxNostr!,
       mahjongChannelId,
       mahjongServerPubkey,
+      pushSubscription,
       setEvents,
       setChatEvents,
       setStatus,

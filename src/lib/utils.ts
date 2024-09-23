@@ -40,10 +40,15 @@ export const fetchEventsOfChannel = (
   rxReqB.over();
 };
 
+interface Subscription {
+  unsubscribe(): void;
+}
+
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
   mahjongChannelId: string,
   mahjongServerPubkey: string,
+  pushSubscription: (value: Subscription) => void,
   setEvents: (value: NostrEvent[]) => void,
   setChatEvents: (value: NostrEvent[]) => void,
   setStatus: (value: string) => void,
@@ -161,11 +166,13 @@ export const fetchEventsToReplay = (
         since: now,
       },
       {
-        kinds: [1, 42],
+        kinds: [42],
+        '#e': [mahjongChannelId],
         '#t': [chatHashtag],
         since: now,
       },
     ]);
+    pushSubscription(subscriptionF);
   };
   const subscriptionB = rxNostr.use(rxReqB).pipe(uniq(flushes$)).subscribe({ next, complete: complete1 });
   rxReqB.emit([
