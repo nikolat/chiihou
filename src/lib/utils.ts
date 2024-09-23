@@ -13,6 +13,33 @@ export const enum RxReqMode {
   Forward,
 }
 
+export const fetchEventsOfChannel = (
+  rxNostr: RxNostr,
+  mahjongChannelIds: string[],
+  setMahjongChannelEvents: (value: Map<string, NostrEvent | undefined>) => void,
+) => {
+  const mahjongChannelEvents: Map<string, NostrEvent | undefined> = new Map<string, NostrEvent | undefined>();
+  const rxReqB = createRxBackwardReq();
+  const now = Math.floor(Date.now() / 1000);
+  const flushes$ = new Subject<void>();
+  const next = (packet: EventPacket) => {
+    const event = packet.event;
+    mahjongChannelEvents.set(event.id, event);
+  };
+  const complete = () => {
+    setMahjongChannelEvents(mahjongChannelEvents);
+  };
+  const subscriptionB = rxNostr.use(rxReqB).pipe(uniq(flushes$)).subscribe({ next, complete });
+  rxReqB.emit([
+    {
+      kinds: [40],
+      ids: mahjongChannelIds,
+      until: now,
+    },
+  ]);
+  rxReqB.over();
+};
+
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
   mahjongChannelId: string,
@@ -166,7 +193,8 @@ export const fetchEventsToReplay = (
       until: now,
     },
     {
-      kinds: [1, 42],
+      kinds: [42],
+      '#e': [mahjongChannelId],
       '#t': [chatHashtag],
       limit: 10,
       until: now,

@@ -2,21 +2,26 @@
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
-  import { mahjongPlayerPubkeys, urlNIP07guide } from '$lib/config';
+  import { mahjongChannelIds, mahjongPlayerPubkeys, urlNIP07guide } from '$lib/config';
   import { getNpubWithNIP07, RxReqMode, sendMention, sleep } from '$lib/utils';
 
   export let rxNostr: RxNostr | undefined;
   export let mahjongChannelId: string;
   export let mahjongServerPubkey: string;
+  export let mahjongChannelEvents: Map<string, NostrEvent | undefined>;
   export let loginPubkey: string | undefined;
   export let status: string | undefined;
   export let isStoppedReplay: boolean;
+  export let setMahjongChannelId: (value: string) => void;
   export let setIsStoppedReplay: (value: boolean) => void;
   export let setSleepInterval: (value: number) => void;
   export let setLoginPubkey: (value: string | undefined) => void;
   export let replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>;
+  export let refetch: () => Promise<void>;
   export let events: NostrEvent[];
   export let last_created_at: number;
+
+  let selectedChannelId: string;
 
   const gamestartByForce = async () => {
     setSleepInterval(0);
@@ -49,6 +54,21 @@
   {nip19.npubEncode(loginPubkey)}
 {/if}
 <br />
+<select
+  id="select-channel"
+  bind:value={selectedChannelId}
+  on:change={() => {
+    setMahjongChannelId(selectedChannelId);
+    refetch();
+  }}
+>
+  {#each mahjongChannelIds as id}
+    {@const ev = mahjongChannelEvents.get(id)}
+    {@const obj = JSON.parse(ev?.content ?? '{}')}
+    {@const name = obj.name}
+    <option value={id}>{name ?? id}</option>
+  {/each}
+</select>
 <button
   title="最初から"
   on:click={async () => {
@@ -81,6 +101,7 @@
   }}>⏭️</button
 >
 {#if loginPubkey !== undefined}
+  <br />
   <button
     disabled={!status}
     on:click={() => {
@@ -150,5 +171,8 @@
 <style>
   .player {
     height: 64px;
+  }
+  #select-channel {
+    width: 10em;
   }
 </style>

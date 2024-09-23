@@ -8,6 +8,7 @@
   import {
     canAnkan,
     canTsumo,
+    fetchEventsOfChannel,
     fetchEventsToReplay,
     fetchProfiles,
     RxReqMode,
@@ -23,8 +24,9 @@
   import Info from '$lib/components/Info.svelte';
   import Player from '$lib/components/Player.svelte';
 
-  const mahjongChannelId = mahjongChannelIds.at(0)!;
   const mahjongServerPubkey = mahjongServerPubkeys.at(0)!;
+  let mahjongChannelId: string;
+  let mahjongChannelEvents: Map<string, NostrEvent | undefined> = new Map<string, NostrEvent | undefined>();
   let events: NostrEvent[] = [];
   let chatEvents: NostrEvent[] = [];
   let status: string | undefined;
@@ -68,6 +70,56 @@
   let isKyokuEnd: boolean = false;
   let isGameEnd: boolean = false;
 
+  const reset = async () => {
+    sleepInterval = 0;
+    await sleep(defaultSleepInterval);
+    events = [];
+    chatEvents = [];
+    status = undefined;
+    players = new Map<string, NostrEvent | undefined>();
+    chatMembers = new Map<string, NostrEvent>();
+    sekijun = [];
+    kaze = new Map<string, string>();
+    points = new Map<string, number>();
+    pointDiff = new Map<string, string>();
+    tehai = new Map<string, string>();
+    tsumohai = new Map<string, string>();
+    sutehai = new Map<string, string>();
+    say = new Map<string, string>();
+    richiJunme = new Map<string, number>();
+    furoJunme = new Map<string, number[]>();
+    furoHistory = new Map<string, [{ sutehai: string; pubkey: string }]>();
+    kakanHistory = new Map<string, string[]>();
+    nakuKinds = new Map<string, string[] | undefined>();
+    bafu = undefined;
+    kyoku = undefined;
+    tsumibou = undefined;
+    kyoutaku = undefined;
+    nokori = undefined;
+    dorahyoujihai = undefined;
+    uradorahyoujihai = undefined;
+    result = undefined;
+    agariPlayer = undefined;
+    furikomiPlayer = undefined;
+    pubkeysToOpenTehai = new Set<string>();
+    sutehaiSaved = '';
+    sutehaiPlayerSaved = '';
+    sutehaiCommand = '';
+    lastEventsToReply = new Map<string, NostrEvent>();
+    last_created_at = 0;
+    requestedCommand = undefined;
+    isKyokuEnd = false;
+    isGameEnd = false;
+    isStoppedReplay = false;
+    sleepInterval = defaultSleepInterval;
+  };
+
+  const setMahjongChannelId = (value: string) => {
+    mahjongChannelId = value;
+  };
+  const setMahjongChannelEvents = (value: Map<string, NostrEvent | undefined>) => {
+    mahjongChannelEvents = value;
+  };
   const setLoginPubkey = (value: string | undefined) => {
     loginPubkey = value;
   };
@@ -109,8 +161,15 @@
   onMount(() => {
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
+    mahjongChannelId = mahjongChannelIds.at(0)!;
+    fetchEventsOfChannel(rxNostr, mahjongChannelIds, setMahjongChannelEvents);
+    refetch();
+  });
+
+  const refetch = async (): Promise<void> => {
+    await reset();
     fetchEventsToReplay(
-      rxNostr,
+      rxNostr!,
       mahjongChannelId,
       mahjongServerPubkey,
       setEvents,
@@ -120,7 +179,7 @@
       replay,
       setSleepInterval,
     );
-  });
+  };
 
   const replay = async (events: NostrEvent[], mode: RxReqMode) => {
     for (const ev of events) {
@@ -407,13 +466,16 @@
     {rxNostr}
     {mahjongChannelId}
     {mahjongServerPubkey}
+    {mahjongChannelEvents}
     {loginPubkey}
     {status}
     {isStoppedReplay}
+    {setMahjongChannelId}
     {setIsStoppedReplay}
     {setSleepInterval}
     {setLoginPubkey}
     {replay}
+    {refetch}
     {events}
     {last_created_at}
   />
@@ -527,7 +589,7 @@
     padding: 1px 3px;
     border-radius: 3px;
   }
-  :global(body input) {
+  :global(body input, body select) {
     padding: 0;
     display: inline-block;
   }
