@@ -47,7 +47,7 @@ export const fetchEventsToReplay = (
   pushSubscription: (value: Subscription) => void,
   setEvents: (value: NostrEvent[]) => void,
   setChatEvents: (value: NostrEvent[]) => void,
-  setStatus: (value: string) => void,
+  setStatus: (value: Map<string, NostrEvent>) => void,
   setChatMembers: (value: Map<string, NostrEvent>) => void,
   replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>,
   setSleepInterval: (value: number) => void,
@@ -70,7 +70,7 @@ export const fetchEventsToReplay = (
     } else if (event.kind === 30315) {
       if (statusEvent === undefined || statusEvent.created_at < event.created_at) {
         statusEvent = event;
-        setStatus(statusEvent.content);
+        setStatus(new Map<string, NostrEvent>([[mahjongChannelId, statusEvent]]));
       }
     } else if (event.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === chatHashtag)) {
       chatEvents = insertEventIntoDescendingList(chatEvents, event);
@@ -134,7 +134,7 @@ export const fetchEventsToReplay = (
           }
         } else if (event.kind === 30315) {
           statusEvent = event;
-          setStatus(statusEvent.content);
+          setStatus(new Map<string, NostrEvent>([[mahjongChannelId, statusEvent]]));
         } else {
           events = insertEventIntoDescendingList(events, packet.event);
           setEvents(events);
@@ -158,7 +158,7 @@ export const fetchEventsToReplay = (
       {
         kinds: [30315],
         authors: [mahjongServerPubkey],
-        '#d': ['general'],
+        '#d': [mahjongChannelId],
         since: now,
       },
       {
@@ -191,8 +191,7 @@ export const fetchEventsToReplay = (
     {
       kinds: [30315],
       authors: [mahjongServerPubkey],
-      '#d': ['general'],
-      limit: 1,
+      '#d': [mahjongChannelId],
       until: now,
     },
     {

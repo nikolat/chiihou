@@ -30,7 +30,7 @@
   let mahjongChannelEvents: Map<string, NostrEvent | undefined> = new Map<string, NostrEvent | undefined>();
   let events: NostrEvent[] = [];
   let chatEvents: NostrEvent[] = [];
-  let status: string | undefined;
+  let status: Map<string, NostrEvent | undefined> = new Map<string, NostrEvent | undefined>();
   let players: Map<string, NostrEvent | undefined> = new Map<string, NostrEvent | undefined>();
   let chatMembers: Map<string, NostrEvent> = new Map<string, NostrEvent>();
   let sekijun: string[] = [];
@@ -81,7 +81,7 @@
     await sleep(defaultSleepInterval);
     events = [];
     chatEvents = [];
-    status = undefined;
+    status = new Map<string, NostrEvent | undefined>();
     players = new Map<string, NostrEvent | undefined>();
     chatMembers = new Map<string, NostrEvent>();
     sekijun = [];
@@ -156,7 +156,7 @@
   const setChatEvents = (value: NostrEvent[]) => {
     chatEvents = value;
   };
-  const setStatus = (value: string) => {
+  const setStatus = (value: Map<string, NostrEvent>) => {
     status = value;
   };
   const callSendDapai = (pai: string | undefined) => {
@@ -478,7 +478,7 @@
     {mahjongServerPubkey}
     {mahjongChannelEvents}
     {loginPubkey}
-    {status}
+    status={status.get(mahjongChannelId)?.content}
     {isStoppedReplay}
     {setMahjongChannelId}
     {setIsStoppedReplay}
@@ -502,7 +502,7 @@
       {dorahyoujihai}
       {uradorahyoujihai}
       {doras}
-      {status}
+      status={status.get(mahjongChannelId)?.content}
       {result}
       {chatEvents}
       {chatMembers}
@@ -534,7 +534,7 @@
           {mahjongChannelId}
           {mahjongServerPubkey}
           {loginPubkey}
-          {status}
+          status={status.get(mahjongChannelId)?.content}
           {nakuKinds}
           {sutehaiSaved}
           {doras}
