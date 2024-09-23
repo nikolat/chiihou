@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createRxNostr, type RxNostr } from 'rx-nostr';
   import { verifier } from 'rx-nostr-crypto';
+  import { Subscription } from 'rxjs';
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
   import { onMount } from 'svelte';
@@ -70,10 +71,6 @@
   let isStoppedReplay: boolean = false;
   let isKyokuEnd: boolean = false;
   let isGameEnd: boolean = false;
-
-  interface Subscription {
-    unsubscribe(): void;
-  }
 
   const reset = async () => {
     for (const s of subscriptions) {

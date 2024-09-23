@@ -1,5 +1,5 @@
 import { createRxForwardReq, createRxBackwardReq, uniq, type EventPacket, type RxNostr } from 'rx-nostr';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import type { NostrEvent } from 'nostr-tools/core';
 import { binarySearch } from 'nostr-tools/utils';
 import * as nip19 from 'nostr-tools/nip19';
@@ -39,10 +39,6 @@ export const fetchEventsOfChannel = (
   ]);
   rxReqB.over();
 };
-
-interface Subscription {
-  unsubscribe(): void;
-}
 
 export const fetchEventsToReplay = (
   rxNostr: RxNostr,
