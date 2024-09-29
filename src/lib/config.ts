@@ -23,6 +23,8 @@ export const getRoboHashURL = (pubkey: string) => {
 };
 export const urlNIP07guide = 'https://welcome.nostr-jp.org/tutorial/nip-07.html';
 
+export const clientTag = ['client', 'chiihou', '31990:6b0a60cff3eca5a2b2505ccb3f7133d8422045cbef40f3d2c6189fb0b952e7d4:1727582360441'];
+
 declare global {
   interface Window {
     nostr?: WindowNostr;

@@ -6,7 +6,7 @@ import * as nip19 from 'nostr-tools/nip19';
 import { addHai, compareFn, removeHai, stringToArrayWithFuro } from '$lib/mjlib/mj_common';
 import { getShanten } from '$lib/mjlib/mj_shanten';
 import { getKakanHai } from '$lib/mjlib/mj_ai';
-import { chatHashtag } from '$lib/config';
+import { chatHashtag, clientTag } from '$lib/config';
 
 export const enum RxReqMode {
   Backward,
@@ -244,7 +244,7 @@ export const insertEventIntoDescendingList = (sortedArray: NostrEvent[], event: 
 };
 
 export const getTagsReply = (event: NostrEvent): string[][] => {
-  const tagsReply: string[][] = [];
+  const tagsReply: string[][] = [clientTag];
   const tagRoot = event.tags.find((tag) => tag.length >= 4 && tag[0] === 'e' && tag[3] === 'root');
   if (tagRoot !== undefined) {
     tagsReply.push(tagRoot);
@@ -310,10 +310,7 @@ export const sendMention = (
   rxNostr.send({
     kind: 42,
     content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
-    tags: [
-      ['e', mahjongChannelId, '', 'root'],
-      ['p', pubkey, ''],
-    ],
+    tags: [clientTag, ['e', mahjongChannelId, '', 'root'], ['p', pubkey, '']],
     created_at: last_created_at < now ? now : last_created_at + 1,
   });
 };
@@ -323,10 +320,7 @@ export const sendChatMessage = (rxNostr: RxNostr | undefined, mahjongChannelId: 
   rxNostr.send({
     kind: 42,
     content: `${message} #${chatHashtag}`,
-    tags: [
-      ['e', mahjongChannelId, '', 'root'],
-      ['t', chatHashtag],
-    ],
+    tags: [clientTag, ['e', mahjongChannelId, '', 'root'], ['t', chatHashtag]],
   });
 };
 
