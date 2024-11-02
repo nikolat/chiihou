@@ -248,9 +248,9 @@ export const getTagsReply = (event: NostrEvent): string[][] => {
   const tagRoot = event.tags.find((tag) => tag.length >= 4 && tag[0] === 'e' && tag[3] === 'root');
   if (tagRoot !== undefined) {
     tagsReply.push(tagRoot);
-    tagsReply.push(['e', event.id, '', 'reply']);
+    tagsReply.push(['e', event.id, '', 'reply', event.pubkey]);
   } else {
-    tagsReply.push(['e', event.id, '', 'root']);
+    tagsReply.push(['e', event.id, '', 'root', event.pubkey]);
   }
   for (const tag of event.tags.filter((tag) => tag.length >= 2 && tag[0] === 'p' && tag[1] !== event.pubkey)) {
     tagsReply.push(tag);
