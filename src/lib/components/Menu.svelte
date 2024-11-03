@@ -145,16 +145,6 @@
       sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'next', last_created_at);
     }}>Next</button
   >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'ping', last_created_at);
-    }}>Ping</button
-  >
-  <button
-    on:click={() => {
-      sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'help', last_created_at);
-    }}>Help</button
-  >
   <br />
   <button on:click={gamestartByForce}
     >GameStart With <img class="player" src="https://nikolat.github.io/avatar/rinrin.png" alt="rinrin" />
