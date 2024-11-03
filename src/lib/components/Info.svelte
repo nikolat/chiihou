@@ -14,6 +14,7 @@
   export let dorahyoujihai: string | undefined;
   export let uradorahyoujihai: string | undefined;
   export let doras: string[];
+  export let loginPubkey: string | undefined;
   export let status: string | undefined;
   export let result: string | undefined;
   export let chatEvents: NostrEvent[];
@@ -82,7 +83,7 @@
   status: {status || '空席'}<br />{result ?? ''}
   {#if isGameEnd}
     <br />
-    <button class="zap" title="Zap!" on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button>
+    <button class="zap" title="Zap!" disabled={!loginPubkey} on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button>
   {/if}
 </div>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -103,7 +104,7 @@
       sendChatMessage(rxNostr, mahjongChannelId, inputText);
       inputText = '';
     }}
-    disabled={!inputText}>Post</button
+    disabled={!inputText || !loginPubkey}>Post</button
   >
   <dl>
     {#each chatEvents as event}

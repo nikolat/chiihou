@@ -259,19 +259,6 @@ export const getTagsReply = (event: NostrEvent): string[][] => {
   return tagsReply;
 };
 
-export const getNpubWithNIP07 = async (setLoginPubkey: (value: string | undefined) => void): Promise<void> => {
-  const nostr = window.nostr;
-  let pubkey: string | undefined;
-  if (nostr?.getPublicKey) {
-    try {
-      pubkey = await nostr.getPublicKey();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  setLoginPubkey(pubkey);
-};
-
 export const zap = (pubkey: string, relays: string[]) => {
   const elm = document.createElement('button') as HTMLButtonElement;
   elm.dataset.npub = nip19.npubEncode(pubkey);

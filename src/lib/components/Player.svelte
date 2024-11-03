@@ -83,7 +83,9 @@
   {kaze.get(key) ?? '?'}家
   {profile.display_name ?? ''} @{profile.name ?? ''}
   <br />
-  <button class="zap" title="Zap!" disabled={!(profile.lud06 || profile.lud16)} on:click={() => zap(key, defaultRelays)}>⚡️</button>
+  <button class="zap" title="Zap!" disabled={!(profile.lud06 || profile.lud16) || !loginPubkey} on:click={() => zap(key, defaultRelays)}
+    >⚡️</button
+  >
   {points.get(key) ?? 0}点 {pointDiff.get(key) ?? ''}
   <br /><img class="player" alt={profile.name ?? ''} title={profile.name ?? ''} src={profile.picture ?? getRoboHashURL(key)} />
   <div class="command">

@@ -168,6 +168,14 @@
   };
 
   onMount(() => {
+    document.addEventListener('nlAuth', (e) => {
+      const ce: CustomEvent = e as CustomEvent;
+      if (ce.detail.type === 'login' || ce.detail.type === 'signup') {
+        setLoginPubkey(ce.detail.pubkey);
+      } else {
+        setLoginPubkey(undefined);
+      }
+    });
     rxNostr = createRxNostr({ verifier, eoseTimeout: 2000 });
     rxNostr.setDefaultRelays(defaultRelays);
     mahjongChannelId = mahjongChannelIds.at(0)!;
@@ -467,6 +475,7 @@
 <svelte:head>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
   <script type="module" src="https://cdn.jsdelivr.net/npm/nostr-zap@1.1.0"></script>
+  <script type="module" src="https://www.unpkg.com/nostr-login@latest/dist/unpkg.js"></script>
   <title>地鳳</title>
 </svelte:head>
 
@@ -483,7 +492,6 @@
     {setMahjongChannelId}
     {setIsStoppedReplay}
     {setSleepInterval}
-    {setLoginPubkey}
     {replay}
     {refetch}
     {events}
@@ -502,6 +510,7 @@
       {dorahyoujihai}
       {uradorahyoujihai}
       {doras}
+      {loginPubkey}
       status={status.get(mahjongChannelId)?.content}
       {result}
       {chatEvents}
@@ -572,7 +581,7 @@
 </main>
 <footer>
   <a href={linkGitHub} target="_blank" rel="noopener noreferrer">GitHub</a>
-  <button class="zap" title="Zap!" on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button>
+  <button class="zap" title="Zap!" disabled={!loginPubkey} on:click={() => zap(mahjongServerPubkey, defaultRelays)}>⚡️</button>
   牌画像 (c)
   <a href="https://awayuki.github.io/emojis.html#mahjong" target="_blank" rel="noopener noreferrer">awayuki</a>
 </footer>

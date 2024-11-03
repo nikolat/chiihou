@@ -2,8 +2,8 @@
   import type { RxNostr } from 'rx-nostr';
   import type { NostrEvent } from 'nostr-tools/pure';
   import * as nip19 from 'nostr-tools/nip19';
-  import { mahjongChannelIds, mahjongPlayerPubkeys, urlNIP07guide } from '$lib/config';
-  import { getNpubWithNIP07, RxReqMode, sendMention, sleep } from '$lib/utils';
+  import { mahjongChannelIds, mahjongPlayerPubkeys } from '$lib/config';
+  import { RxReqMode, sendMention, sleep } from '$lib/utils';
 
   export let rxNostr: RxNostr | undefined;
   export let mahjongChannelId: string;
@@ -15,7 +15,6 @@
   export let setMahjongChannelId: (value: string) => void;
   export let setIsStoppedReplay: (value: boolean) => void;
   export let setSleepInterval: (value: number) => void;
-  export let setLoginPubkey: (value: string | undefined) => void;
   export let replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>;
   export let refetch: () => Promise<void>;
   export let events: NostrEvent[];
@@ -38,17 +37,13 @@
 {#if loginPubkey === undefined}
   <button
     on:click={() => {
-      if (window.nostr === undefined) {
-        window.location.href = urlNIP07guide;
-      } else {
-        getNpubWithNIP07(setLoginPubkey);
-      }
-    }}>NIP-07 Login</button
+      document.dispatchEvent(new CustomEvent('nlLaunch', { detail: '' }));
+    }}>Nostr Login</button
   >
 {:else}
   <button
     on:click={() => {
-      setLoginPubkey(undefined);
+      document.dispatchEvent(new Event('nlLogout'));
     }}>Logout</button
   >
   {nip19.npubEncode(loginPubkey)}
