@@ -25,10 +25,10 @@
   const gamestartByForce = async () => {
     setSleepInterval(0);
     sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'reset', last_created_at);
-    await sleep(500);
+    await sleep(1000);
     sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'gamestart', last_created_at);
     for (let i = 0; i <= 2; i++) {
-      await sleep(500);
+      await sleep(1000);
       sendMention(rxNostr, mahjongChannelId, mahjongPlayerPubkeys[i], 'join', last_created_at);
     }
   };
