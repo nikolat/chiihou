@@ -134,12 +134,6 @@
     }}>Join whanwhan</button
   >
   <button
-    disabled={status !== '対局中'}
-    on:click={() => {
-      sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'status', last_created_at);
-    }}>Status</button
-  >
-  <button
     disabled={status !== 'next待ち'}
     on:click={() => {
       sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'next', last_created_at);
