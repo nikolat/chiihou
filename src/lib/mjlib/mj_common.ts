@@ -83,6 +83,26 @@ export const removeHai = (tehai: string, hai: string): string => {
 	return r;
 };
 
+export const addFuro = (tehai: string, furo: string, s1: string, s2: string): string => {
+	const sortedFuro = stringToArrayWithFuro(furo)[0];
+	sortedFuro.sort(compareFn);
+	const strFuro = sortedFuro.join('');
+	const index = tehai.search(/[<(]/);
+	if (index >= 0) {
+		return tehai.slice(0, index) + s1 + strFuro + s2 + tehai.slice(index);
+	} else {
+		return tehai + s1 + strFuro + s2;
+	}
+};
+
+export const shuffle = (array: string[]) => {
+	for (let i = array.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
+	}
+	return array;
+};
+
 //指定した要素を削除
 export const removeElementByName = (ary: string[], name: string, count: number) => {
 	const ret: string[] = [];

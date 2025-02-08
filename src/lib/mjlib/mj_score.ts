@@ -40,10 +40,12 @@ export const getScore = (
 	}
 	//仮に最初の面子セットで役判定
 	let composition_group_first: string[];
+	let _atama_hai: string;
 	const mentsu: string[][] = [];
 	const count_kantsu = hai_furo.filter((s) => s.length === 8).length + hai_ankan.length;
 	if (is_normal) {
 		composition_group_first = composition[0].split(',');
+		_atama_hai = stringToArray(composition_group_first[0])[0];
 		for (let i = 1; i < composition_group_first.length; i++) {
 			const c = composition_group_first[i].replaceAll(/[<>()]/g, '');
 			mentsu.push(stringToArray(c));

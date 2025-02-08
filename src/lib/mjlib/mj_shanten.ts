@@ -369,7 +369,7 @@ const getCompositionRecursion = (
 			structuredClone(ret_a_shuntsu),
 			structuredClone(ret_b_shuntsu)
 		); //抜き取ったら同じ位置でもう一度試行
-		const r = cr[0];
+		const r: number[][] = cr[0];
 		ret_a_shuntsu = cr[1];
 		ret_b_shuntsu = cr[2];
 		hai[n]++;
@@ -415,7 +415,7 @@ const getCompositionRecursion = (
 			structuredClone(ret_a_kotsu),
 			structuredClone(ret_b_kotsu)
 		); //抜き取ったら同じ位置でもう一度試行
-		const r = cr[0];
+		const r: number[][] = cr[0];
 		ret_a_kotsu = cr[1];
 		ret_b_kotsu = cr[2];
 		hai[n] += 3;
@@ -655,7 +655,8 @@ const getShantenYakuhai = (tehai: string, bafu_hai: string, jifu_hai: string): n
 		if (yakuhai.includes(hai)) has_yakuhai_kotsu = true;
 	}
 	for (const h of hai_ankan) {
-		if (yakuhai.includes(h)) has_yakuhai_kotsu = true;
+		const hai = h.slice(0, 2);
+		if (yakuhai.includes(hai)) has_yakuhai_kotsu = true;
 	}
 	if (has_yakuhai_kotsu) return getShanten(tehai)[0];
 	const toitsu = getToitsu(hai_normal);
