@@ -568,7 +568,7 @@
 	<section id="players">
 		<h2>Players</h2>
 		<dl class="players">
-			{#each Array.from(players.entries()) as [key, value]}
+			{#each Array.from(players.entries()) as [key, value] (key)}
 				{@const isAgariPlayer = agariPlayer !== undefined && agariPlayer === key}
 				{@const isFurikomiPlayer = furikomiPlayer !== undefined && furikomiPlayer === key}
 				<Player
@@ -614,7 +614,7 @@
 	<section id="log" class={loginPubkey === undefined ? '' : 'hidden'}>
 		<h2>Log</h2>
 		<dl class="log">
-			{#each events as event}
+			{#each events as event (event.id)}
 				<dt>
 					<time>{new Date(1000 * event.created_at).toLocaleString()}</time>
 				</dt>

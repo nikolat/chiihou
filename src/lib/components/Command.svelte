@@ -87,7 +87,7 @@
 		>
 	{/if}
 	{#if nakuKinds.get(loginPubkey)?.includes('chi')}
-		{#each getChiMaterial(tehai.get(loginPubkey) ?? '', sutehaiSaved) as cm}
+		{#each getChiMaterial(tehai.get(loginPubkey) ?? '', sutehaiSaved) as cm (cm)}
 			{@const pai1 = cm.slice(0, 2)}
 			{@const pai2 = cm.slice(2, 4)}
 			<br /><button
@@ -139,7 +139,7 @@
 	{@const cTehai = tehai.get(loginPubkey) ?? ''}
 	{@const cTsumohai = tsumohai.get(loginPubkey) ?? ''}
 	sutehai?
-	{#each getAnkanHai(addHai(cTehai, cTsumohai)) as h}
+	{#each getAnkanHai(addHai(cTehai, cTsumohai)) as h (h)}
 		<br /><button
 			disabled={status !== '対局中'}
 			onclick={() => {
@@ -158,7 +158,7 @@
 			isSkipped={false}
 		/>
 	{/each}
-	{#each getKakanHai(addHai(cTehai, cTsumohai)) as h}
+	{#each getKakanHai(addHai(cTehai, cTsumohai)) as h (h)}
 		<br /><button
 			disabled={status !== '対局中'}
 			onclick={() => {

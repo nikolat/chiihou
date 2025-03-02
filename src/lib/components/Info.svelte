@@ -55,7 +55,7 @@
 		? 0
 		: kyoutaku / 1000} 残り{nokori ?? 0}枚
 	<br />
-	{#each stringToArrayPlain(dorahyoujihai ?? '') as p}<Pai
+	{#each stringToArrayPlain(dorahyoujihai ?? '') as p, i (i)}<Pai
 			pai={p}
 			isDora={doras.includes(p)}
 			isRemoved={false}
@@ -65,7 +65,7 @@
 			isRotated={false}
 			isKakan={false}
 			isSkipped={false}
-		/>{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p}<Pai
+		/>{/each}{#each new Array((10 - (dorahyoujihai ?? '').length) / 2).fill('back') as p, i (i)}<Pai
 			pai={p}
 			isDora={false}
 			isRemoved={false}
@@ -78,7 +78,7 @@
 		/>{/each}
 	{#if uradorahyoujihai !== undefined && uradorahyoujihai.length > 0}
 		<br />
-		{#each stringToArrayPlain(uradorahyoujihai) as p}<Pai
+		{#each stringToArrayPlain(uradorahyoujihai) as p, i (i)}<Pai
 				pai={p}
 				isDora={doras.includes(p)}
 				isRemoved={false}
@@ -88,7 +88,7 @@
 				isRotated={false}
 				isKakan={false}
 				isSkipped={false}
-			/>{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p}<Pai
+			/>{/each}{#each new Array((10 - uradorahyoujihai.length) / 2).fill('back') as p, i (i)}<Pai
 				pai={p}
 				isDora={false}
 				isRemoved={false}
@@ -139,7 +139,7 @@
 		disabled={!inputText || !loginPubkey}>Post</button
 	>
 	<dl>
-		{#each chatEvents as event}
+		{#each chatEvents as event (event.id)}
 			{@const kind0 = chatMembers.get(event.pubkey)}
 			{@const profile = JSON.parse(kind0?.content || '{}')}
 			<dt>

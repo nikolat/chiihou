@@ -76,7 +76,7 @@
 		}
 	}}
 >
-	{#each mahjongChannelIds as id}
+	{#each mahjongChannelIds as id (id)}
 		{@const ev = mahjongChannelEvents.get(id)}
 		{@const obj = JSON.parse(ev?.content ?? '{}')}
 		{@const name = obj.name}

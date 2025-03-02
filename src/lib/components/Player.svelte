@@ -173,7 +173,7 @@
 </dt>
 <dd>
 	<div class="tehai">
-		{#each paigazouTehai?.at(0) ?? [] as pai}
+		{#each paigazouTehai?.at(0) ?? [] as pai, i (i)}
 			{#if isSutehaiTurn && loginPubkey === key}
 				<button
 					class={'dapai exist' + (isRichi ? '' : ' selectable')}
@@ -215,14 +215,14 @@
 				/>
 			{/if}
 		{/each}
-		{#each paigazouTehai?.at(1) ?? [] as pai, index}
+		{#each paigazouTehai?.at(1) ?? [] as pai, index (index)}
 			{@const sutehai = furoHistory.get(key)?.at(index)?.sutehai ?? ''}
 			{@const sutehaiPlayer = furoHistory.get(key)?.at(index)?.pubkey ?? ''}
 			{@const pa = stringToArrayPlain(pai)}
 			{@const paWithoutSutehai = stringToArrayPlain(pai.replace(sutehai, ''))}
 			{@const sutehaiPlayerIndex = getSekijunIndex(sutehaiPlayer)}
 			{@const isKakan = kakanHistory.get(key)?.includes(sutehai) ?? false}
-			{#each pa as p, i}
+			{#each pa as p, i (i)}
 				{@const pai =
 					i === sutehaiPlayerIndex ? sutehai : i < sutehaiPlayerIndex ? p : paWithoutSutehai[i - 1]}
 				<Pai
@@ -241,9 +241,9 @@
 				/>
 			{/each}
 		{/each}
-		{#each paigazouTehai?.at(2) ?? [] as pai}
+		{#each paigazouTehai?.at(2) ?? [] as pai, index (index)}
 			{@const pa = stringToArrayPlain(pai)}
-			{#each pa as p, i}
+			{#each pa as p, i (i)}
 				<Pai
 					pai={p}
 					isDora={doras.includes(p)}
@@ -305,7 +305,7 @@
 	</div>
 	<br />
 	<div class="kawa">
-		{#each paigazouSutehai as p, i}
+		{#each paigazouSutehai as p, i (i)}
 			{#if [6, 12].includes(i)}<br />{/if}<Pai
 				pai={p}
 				isDora={doras.includes(p)}
