@@ -78,7 +78,7 @@
 		say: Map<string, string>;
 		pubkeysToOpenTehai: Set<string>;
 		furoJunme: Map<string, number[]>;
-		furoHistory: Map<string, [{ sutehai: string; pubkey: string }]>;
+		furoHistory: Map<string, { sutehai: string; pubkey: string }[]>;
 		kakanHistory: Map<string, string[]>;
 		sutehaiPlayerSaved: string;
 		isAgariPlayer: boolean;
@@ -173,7 +173,7 @@
 </dt>
 <dd>
 	<div class="tehai">
-		{#each paigazouTehai?.at(0) ?? [] as pai, i (i)}
+		{#each paigazouTehai.at(0) ?? [] as pai, i (i)}
 			{#if isSutehaiTurn && loginPubkey === key}
 				<button
 					class={'dapai exist' + (isRichi ? '' : ' selectable')}
@@ -215,7 +215,7 @@
 				/>
 			{/if}
 		{/each}
-		{#each paigazouTehai?.at(1) ?? [] as pai, index (index)}
+		{#each paigazouTehai.at(1) ?? [] as pai, index (index)}
 			{@const sutehai = furoHistory.get(key)?.at(index)?.sutehai ?? ''}
 			{@const sutehaiPlayer = furoHistory.get(key)?.at(index)?.pubkey ?? ''}
 			{@const pa = stringToArrayPlain(pai)}
@@ -241,7 +241,7 @@
 				/>
 			{/each}
 		{/each}
-		{#each paigazouTehai?.at(2) ?? [] as pai, index (index)}
+		{#each paigazouTehai.at(2) ?? [] as pai, index (index)}
 			{@const pa = stringToArrayPlain(pai)}
 			{#each pa as p, i (i)}
 				<Pai

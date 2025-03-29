@@ -55,8 +55,8 @@
 	let say: SvelteMap<string, string> = $state(new SvelteMap<string, string>());
 	let richiJunme: SvelteMap<string, number> = $state(new SvelteMap<string, number>());
 	let furoJunme: SvelteMap<string, number[]> = $state(new SvelteMap<string, number[]>());
-	let furoHistory: SvelteMap<string, [{ sutehai: string; pubkey: string }]> = $state(
-		new SvelteMap<string, [{ sutehai: string; pubkey: string }]>()
+	let furoHistory: SvelteMap<string, { sutehai: string; pubkey: string }[]> = $state(
+		new SvelteMap<string, []>()
 	);
 	let kakanHistory: SvelteMap<string, string[]> = $state(new SvelteMap<string, string[]>());
 	let nakuKinds: SvelteMap<string, string[] | undefined> = $state(
@@ -445,10 +445,14 @@
 								if (history === undefined) {
 									furoHistory.set(pubkey, [{ sutehai: sutehaiSaved, pubkey: sutehaiPlayerSaved }]);
 								} else {
-									history.unshift({
-										sutehai: sutehaiSaved,
-										pubkey: sutehaiPlayerSaved
-									});
+									const newHistory = [
+										{
+											sutehai: sutehaiSaved,
+											pubkey: sutehaiPlayerSaved
+										},
+										...history
+									];
+									furoHistory.set(pubkey, newHistory);
 								}
 								furoHistory = furoHistory;
 							}
