@@ -6,7 +6,7 @@ import {
 	type RxNostr
 } from 'rx-nostr';
 import { Subject, Subscription } from 'rxjs';
-import type { NostrEvent } from 'nostr-tools/core';
+import { sortEvents, type NostrEvent } from 'nostr-tools/pure';
 import { binarySearch } from 'nostr-tools/utils';
 import * as nip19 from 'nostr-tools/nip19';
 import { addHai, compareFn, removeHai, stringToArrayWithFuro } from '$lib/mjlib/mj_common';
@@ -68,6 +68,8 @@ export const fetchEventsToReplay = (
 	const rxReqB = createRxBackwardReq();
 	const now = Math.floor(Date.now() / 1000);
 	const flushes$ = new Subject<void>();
+	const gamestartEvents: NostrEvent[] = [];
+	const kyokustartEvents: NostrEvent[] = [];
 	const next = (packet: EventPacket) => {
 		const event = packet.event;
 		if (event.kind === 0) {
@@ -86,19 +88,36 @@ export const fetchEventsToReplay = (
 		) {
 			chatEvents = insertEventIntoDescendingList(chatEvents, event);
 			setChatEvents(chatEvents);
+		} else if (
+			event.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === 'gamestart')
+		) {
+			if (!gamestartEvents.map((ev) => ev.id).includes(event.id)) {
+				gamestartEvents.push(event);
+			}
+		} else if (
+			event.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === 'kyokustart')
+		) {
+			if (!kyokustartEvents.map((ev) => ev.id).includes(event.id)) {
+				kyokustartEvents.push(event);
+			}
 		} else {
 			events = insertEventIntoDescendingList(events, event);
 			setEvents(events);
 		}
 	};
 	const complete1 = async () => {
-		const lastKyokuStartEvent = events.find((ev) =>
-			ev.tags.some((tag) => tag.length >= 2 && tag[0] === 't' && tag[1] === 'kyokustart')
-		);
-		if (lastKyokuStartEvent === undefined) {
+		const gamestartEventsSliced = sortEvents(gamestartEvents).slice(0, 4);
+		for (const ev of gamestartEventsSliced) {
+			events = insertEventIntoDescendingList(events, ev);
+			setEvents(events);
+		}
+		const kyokustartEvent = sortEvents(kyokustartEvents).at(0);
+		if (kyokustartEvent === undefined) {
 			console.warn('#kyokustart is not found');
 			return;
 		}
+		events = insertEventIntoDescendingList(events, kyokustartEvent);
+		setEvents(events);
 		const chatMemberPubkeys = Array.from(new Set<string>(chatEvents.map((ev) => ev.pubkey)));
 		const rxReqB2 = createRxBackwardReq();
 		const _subscriptionB2 = rxNostr
@@ -110,7 +129,7 @@ export const fetchEventsToReplay = (
 				kinds: [42],
 				authors: [mahjongServerPubkey],
 				'#e': [mahjongChannelId],
-				since: lastKyokuStartEvent.created_at,
+				since: kyokustartEvent.created_at,
 				until: now
 			},
 			{
