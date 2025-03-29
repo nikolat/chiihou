@@ -33,18 +33,21 @@
 
 	const mahjongServerPubkey = mahjongServerPubkeys.at(0)!;
 	let mahjongChannelId: string = $state('');
-	let mahjongChannelEvents: SvelteMap<string, NostrEvent | undefined> = $state(
-		new SvelteMap<string, NostrEvent | undefined>()
-	);
+	let mahjongChannelEvents: SvelteMap<string, NostrEvent | undefined> = new SvelteMap<
+		string,
+		NostrEvent | undefined
+	>();
 	let events: NostrEvent[] = $state([]);
 	let chatEvents: NostrEvent[] = $state([]);
-	let status: SvelteMap<string, NostrEvent | undefined> = $state(
-		new SvelteMap<string, NostrEvent | undefined>()
-	);
-	let players: SvelteMap<string, NostrEvent | undefined> = $state(
-		new SvelteMap<string, NostrEvent | undefined>()
-	);
-	let chatMembers: SvelteMap<string, NostrEvent> = $state(new SvelteMap<string, NostrEvent>());
+	let status: SvelteMap<string, NostrEvent | undefined> = new SvelteMap<
+		string,
+		NostrEvent | undefined
+	>();
+	let players: SvelteMap<string, NostrEvent | undefined> = new SvelteMap<
+		string,
+		NostrEvent | undefined
+	>();
+	let chatMembers: SvelteMap<string, NostrEvent> = new SvelteMap<string, NostrEvent>();
 	let sekijun: string[] = $state([]);
 	let kaze: SvelteMap<string, string> = $state(new SvelteMap<string, string>());
 	let points: SvelteMap<string, number> = $state(new SvelteMap<string, number>());
