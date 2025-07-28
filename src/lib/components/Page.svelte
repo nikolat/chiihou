@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createRxNostr, type RxNostr } from 'rx-nostr';
-	import { verifier } from 'rx-nostr-crypto';
+	import { verifier } from '@rx-nostr/crypto';
 	import { Subscription } from 'rxjs';
 	import type { NostrEvent } from 'nostr-tools/pure';
 	import * as nip19 from 'nostr-tools/nip19';
@@ -525,7 +525,7 @@
 
 <svelte:head>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
-	<script type="module" src="https://cdn.jsdelivr.net/npm/nostr-zap@1.1.0"></script>
+	<script type="module" src="https://cdn.jsdelivr.net/npm/nostr-zap@latest"></script>
 	<script type="module" src="https://www.unpkg.com/nostr-login@latest/dist/unpkg.js"></script>
 	<title>地鳳</title>
 </svelte:head>
