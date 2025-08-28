@@ -28,6 +28,8 @@
 		rxNostr,
 		mahjongChannelId,
 		mahjongServerPubkey,
+		mahjongKind,
+		geohash,
 		loginPubkey,
 		status,
 		nakuKinds,
@@ -64,6 +66,8 @@
 		rxNostr: RxNostr | undefined;
 		mahjongChannelId: string;
 		mahjongServerPubkey: string;
+		mahjongKind: number;
+		geohash: string;
 		loginPubkey: string | undefined;
 		status: string | undefined;
 		nakuKinds: Map<string, string[] | undefined>;
@@ -151,6 +155,8 @@
 				{rxNostr}
 				{mahjongChannelId}
 				{mahjongServerPubkey}
+				{mahjongKind}
+				{geohash}
 				{loginPubkey}
 				{status}
 				{nakuKinds}

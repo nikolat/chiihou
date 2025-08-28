@@ -23,6 +23,8 @@
 		rxNostr,
 		mahjongChannelId,
 		mahjongServerPubkey,
+		mahjongKind,
+		geohash,
 		isGameEnd
 	}: {
 		bafu: string | undefined;
@@ -41,6 +43,8 @@
 		rxNostr: RxNostr | undefined;
 		mahjongChannelId: string;
 		mahjongServerPubkey: string;
+		mahjongKind: number;
+		geohash: string;
 		isGameEnd: boolean;
 	} = $props();
 
@@ -126,14 +130,14 @@
 		bind:value={inputText}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-				sendChatMessage(rxNostr, mahjongChannelId, inputText);
+				sendChatMessage(rxNostr, mahjongChannelId, mahjongKind, geohash, inputText);
 				inputText = '';
 			}
 		}}
 	/>
 	<button
 		onclick={() => {
-			sendChatMessage(rxNostr, mahjongChannelId, inputText);
+			sendChatMessage(rxNostr, mahjongChannelId, mahjongKind, geohash, inputText);
 			inputText = '';
 		}}
 		disabled={!inputText || !loginPubkey}>Post</button

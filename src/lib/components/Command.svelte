@@ -14,6 +14,8 @@
 		rxNostr,
 		mahjongChannelId,
 		mahjongServerPubkey,
+		mahjongKind,
+		geohash,
 		loginPubkey,
 		status,
 		nakuKinds,
@@ -36,6 +38,8 @@
 		rxNostr: RxNostr | undefined;
 		mahjongChannelId: string;
 		mahjongServerPubkey: string;
+		mahjongKind: number;
+		geohash: string;
 		loginPubkey: string;
 		status: string | undefined;
 		nakuKinds: Map<string, string[] | undefined>;
@@ -57,12 +61,17 @@
 		const ev = lastEventsToReply.get(loginPubkey);
 		if (ev === undefined) return;
 		const now = Math.floor(Date.now() / 1000);
-		rxNostr?.send({
-			kind: 42,
+		const tags = getTagsReply(ev);
+		if (mahjongKind === 20000) {
+			tags.push(['g', geohash], ['n', 'Mahjong Player'], ['t', 'teleport']);
+		}
+		const event = {
+			kind: mahjongKind,
 			content: `nostr:${nip19.npubEncode(ev.pubkey)} naku? ${message}`,
-			tags: getTagsReply(ev),
+			tags,
 			created_at: ev.created_at < now ? now : ev.created_at + 1
-		});
+		};
+		rxNostr?.send(event);
 	};
 
 	const isNakuTurn = $derived(
@@ -198,7 +207,15 @@
 	<button
 		disabled={status !== 'next待ち'}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'next', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongServerPubkey,
+				'next',
+				last_created_at
+			);
 		}}>Next</button
 	>
 {/if}

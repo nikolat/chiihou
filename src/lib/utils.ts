@@ -53,6 +53,7 @@ export const fetchEventsToReplay = (
 	rxNostr: RxNostr,
 	mahjongChannelId: string,
 	mahjongServerPubkey: string,
+	mahjongKind: number,
 	pushSubscription: (value: Subscription) => void,
 	setEvents: (value: NostrEvent[]) => void,
 	setChatEvents: (value: NostrEvent[]) => void,
@@ -114,6 +115,7 @@ export const fetchEventsToReplay = (
 		const kyokustartEvent = sortEvents(kyokustartEvents).at(0);
 		if (kyokustartEvent === undefined) {
 			console.warn('#kyokustart is not found');
+			complete2();
 			return;
 		}
 		events = insertEventIntoDescendingList(events, kyokustartEvent);
@@ -126,7 +128,7 @@ export const fetchEventsToReplay = (
 			.subscribe({ next, complete: complete2 });
 		rxReqB2.emit([
 			{
-				kinds: [42],
+				kinds: [mahjongKind],
 				authors: [mahjongServerPubkey],
 				'#e': [mahjongChannelId],
 				since: kyokustartEvent.created_at,
@@ -185,7 +187,7 @@ export const fetchEventsToReplay = (
 			});
 		rxReqF.emit([
 			{
-				kinds: [42],
+				kinds: [mahjongKind],
 				authors: [mahjongServerPubkey],
 				'#e': [mahjongChannelId],
 				since: now
@@ -197,7 +199,7 @@ export const fetchEventsToReplay = (
 				since: now
 			},
 			{
-				kinds: [42],
+				kinds: [mahjongKind],
 				'#e': [mahjongChannelId],
 				'#t': [chatHashtag],
 				since: now
@@ -211,7 +213,7 @@ export const fetchEventsToReplay = (
 		.subscribe({ next, complete: complete1 });
 	rxReqB.emit([
 		{
-			kinds: [42],
+			kinds: [mahjongKind],
 			authors: [mahjongServerPubkey],
 			'#e': [mahjongChannelId],
 			'#t': ['gamestart'],
@@ -219,7 +221,7 @@ export const fetchEventsToReplay = (
 			until: now
 		},
 		{
-			kinds: [42],
+			kinds: [mahjongKind],
 			authors: [mahjongServerPubkey],
 			'#e': [mahjongChannelId],
 			'#t': ['kyokustart'],
@@ -233,7 +235,7 @@ export const fetchEventsToReplay = (
 			until: now
 		},
 		{
-			kinds: [42],
+			kinds: [mahjongKind],
 			'#e': [mahjongChannelId],
 			'#t': [chatHashtag],
 			limit: 10,
@@ -293,7 +295,14 @@ export const getTagsReply = (event: NostrEvent): string[][] => {
 	)) {
 		tagsReply.push(tag);
 	}
-	tagsReply.push(['p', event.pubkey, '']);
+	tagsReply.push(['p', event.pubkey]);
+	if (event.kind === 20000) {
+		tagsReply.push(
+			...event.tags.filter((tag) => tag.length >= 2 && tag[0] === 'g'),
+			['n', 'Mahjong Player'],
+			['t', 'teleport']
+		);
+	}
 	return tagsReply;
 };
 
@@ -319,7 +328,7 @@ export const sendDapai = (
 	if (rxNostr === undefined) return;
 	const now = Math.floor(Date.now() / 1000);
 	rxNostr.send({
-		kind: 42,
+		kind: eventToReply.kind,
 		content: `nostr:${nip19.npubEncode(eventToReply.pubkey)} sutehai? ${sutehaiCommand} ${pai}`,
 		tags: getTagsReply(eventToReply),
 		created_at: eventToReply.created_at < now ? now : eventToReply.created_at + 1
@@ -330,31 +339,45 @@ export const sendDapai = (
 export const sendMention = (
 	rxNostr: RxNostr | undefined,
 	mahjongChannelId: string,
+	mahjongKind: number,
+	geohash: string,
 	pubkey: string,
 	message: string,
 	last_created_at: number
 ) => {
 	if (rxNostr === undefined) return;
 	const now = Math.floor(Date.now() / 1000);
-	rxNostr.send({
-		kind: 42,
+	const tags = [clientTag, ['e', mahjongChannelId, '', 'root'], ['p', pubkey]];
+	if (mahjongKind === 20000) {
+		tags.push(['g', geohash], ['n', 'Mahjong Player'], ['t', 'teleport']);
+	}
+	const event = {
+		kind: mahjongKind,
 		content: `nostr:${nip19.npubEncode(pubkey)} ${message}`,
-		tags: [clientTag, ['e', mahjongChannelId, '', 'root'], ['p', pubkey, '']],
+		tags,
 		created_at: last_created_at < now ? now : last_created_at + 1
-	});
+	};
+	rxNostr.send(event);
 };
 
 export const sendChatMessage = (
 	rxNostr: RxNostr | undefined,
 	mahjongChannelId: string,
+	mahjongKind: number,
+	geohash: string,
 	message: string
 ) => {
 	if (rxNostr === undefined) return;
-	rxNostr.send({
-		kind: 42,
+	const tags = [clientTag, ['e', mahjongChannelId, '', 'root'], ['t', chatHashtag]];
+	if (mahjongKind === 20000) {
+		tags.push(['g', geohash], ['n', 'Mahjong Player'], ['t', 'teleport']);
+	}
+	const event = {
+		kind: mahjongKind,
 		content: `${message} #${chatHashtag}`,
-		tags: [clientTag, ['e', mahjongChannelId, '', 'root'], ['t', chatHashtag]]
-	});
+		tags
+	};
+	rxNostr.send(event);
 };
 
 export const setFuro = (tehai: string, sute: string, haiUsed: string): string => {

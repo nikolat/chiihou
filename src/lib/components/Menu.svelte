@@ -10,6 +10,8 @@
 		mahjongChannelId,
 		mahjongServerPubkey,
 		mahjongChannelEvents,
+		mahjongKind,
+		geohash,
 		loginPubkey,
 		status,
 		isStoppedReplay,
@@ -25,6 +27,8 @@
 		mahjongChannelId: string;
 		mahjongServerPubkey: string;
 		mahjongChannelEvents: Map<string, NostrEvent | undefined>;
+		mahjongKind: number;
+		geohash: string;
 		loginPubkey: string | undefined;
 		status: string | undefined;
 		isStoppedReplay: boolean;
@@ -41,12 +45,36 @@
 
 	const gamestartByForce = async () => {
 		setSleepInterval(0);
-		sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'reset', last_created_at);
+		sendMention(
+			rxNostr,
+			mahjongChannelId,
+			mahjongKind,
+			geohash,
+			mahjongServerPubkey,
+			'reset',
+			last_created_at
+		);
 		await sleep(1000);
-		sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'gamestart', last_created_at);
+		sendMention(
+			rxNostr,
+			mahjongChannelId,
+			mahjongKind,
+			geohash,
+			mahjongServerPubkey,
+			'gamestart',
+			last_created_at
+		);
 		for (let i = 0; i <= 2; i++) {
 			await sleep(1000);
-			sendMention(rxNostr, mahjongChannelId, mahjongPlayerPubkeys[i], 'join', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongPlayerPubkeys[i],
+				'join',
+				last_created_at
+			);
 		}
 	};
 </script>
@@ -119,43 +147,99 @@
 	<button
 		disabled={!status}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'reset', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongServerPubkey,
+				'reset',
+				last_created_at
+			);
 		}}>Reset</button
 	>
 	<button
 		disabled={!!status}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'gamestart', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongServerPubkey,
+				'gamestart',
+				last_created_at
+			);
 		}}>GameStart</button
 	>
 	<button
 		disabled={!status?.startsWith('募集中')}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'join', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongServerPubkey,
+				'join',
+				last_created_at
+			);
 		}}>Join</button
 	>
 	<button
 		disabled={!status?.startsWith('募集中')}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongPlayerPubkeys[0], 'join', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongPlayerPubkeys[0],
+				'join',
+				last_created_at
+			);
 		}}>Join rinrin</button
 	>
 	<button
 		disabled={!status?.startsWith('募集中')}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongPlayerPubkeys[1], 'join', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongPlayerPubkeys[1],
+				'join',
+				last_created_at
+			);
 		}}>Join chunchun</button
 	>
 	<button
 		disabled={!status?.startsWith('募集中')}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongPlayerPubkeys[2], 'join', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongPlayerPubkeys[2],
+				'join',
+				last_created_at
+			);
 		}}>Join whanwhan</button
 	>
 	<button
 		disabled={status !== 'next待ち'}
 		onclick={() => {
-			sendMention(rxNostr, mahjongChannelId, mahjongServerPubkey, 'next', last_created_at);
+			sendMention(
+				rxNostr,
+				mahjongChannelId,
+				mahjongKind,
+				geohash,
+				mahjongServerPubkey,
+				'next',
+				last_created_at
+			);
 		}}>Next</button
 	>
 	<br />

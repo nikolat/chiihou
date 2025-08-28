@@ -37,6 +37,8 @@
 		string,
 		NostrEvent | undefined
 	>();
+	let mahjongKind: number = $state(42);
+	let geohash: string = $state('xnf9bnmc');
 	let events: NostrEvent[] = $state([]);
 	let chatEvents: NostrEvent[] = $state([]);
 	let status: SvelteMap<string, NostrEvent | undefined> = new SvelteMap<
@@ -216,6 +218,7 @@
 			rxNostr!,
 			mahjongChannelId,
 			mahjongServerPubkey,
+			mahjongKind,
 			pushSubscription,
 			setEvents,
 			setChatEvents,
@@ -537,6 +540,8 @@
 		{mahjongChannelId}
 		{mahjongServerPubkey}
 		{mahjongChannelEvents}
+		{mahjongKind}
+		{geohash}
 		{loginPubkey}
 		status={status.get(mahjongChannelId)?.content}
 		{isStoppedReplay}
@@ -569,6 +574,8 @@
 			{rxNostr}
 			{mahjongChannelId}
 			{mahjongServerPubkey}
+			{mahjongKind}
+			{geohash}
 			{isGameEnd}
 		/>
 	</section>
@@ -593,6 +600,8 @@
 					{rxNostr}
 					{mahjongChannelId}
 					{mahjongServerPubkey}
+					{mahjongKind}
+					{geohash}
 					{loginPubkey}
 					status={status.get(mahjongChannelId)?.content}
 					{nakuKinds}
