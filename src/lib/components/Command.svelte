@@ -62,9 +62,6 @@
 		if (ev === undefined) return;
 		const now = Math.floor(Date.now() / 1000);
 		const tags = getTagsReply(ev);
-		if (mahjongKind === 20000) {
-			tags.push(['g', geohash], ['n', 'Mahjong Player'], ['t', 'teleport']);
-		}
 		const event = {
 			kind: mahjongKind,
 			content: `nostr:${nip19.npubEncode(ev.pubkey)} naku? ${message}`,
