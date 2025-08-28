@@ -16,6 +16,7 @@
 		status,
 		isStoppedReplay,
 		setMahjongChannelId,
+		setMahjongKind,
 		setIsStoppedReplay,
 		setSleepInterval,
 		replay,
@@ -33,6 +34,7 @@
 		status: string | undefined;
 		isStoppedReplay: boolean;
 		setMahjongChannelId: (value: string) => void;
+		setMahjongKind: (value: number) => void;
 		setIsStoppedReplay: (value: boolean) => void;
 		setSleepInterval: (value: number) => void;
 		replay: (events: NostrEvent[], mode: RxReqMode) => Promise<void>;
@@ -42,6 +44,7 @@
 	} = $props();
 
 	let selectedChannelId: string | undefined = $state();
+	let selectedKind: number | undefined = $state();
 
 	const gamestartByForce = async () => {
 		setSleepInterval(0);
@@ -110,6 +113,19 @@
 		{@const name = obj.name}
 		<option value={id}>{name ?? id}</option>
 	{/each}
+</select>
+<select
+	id="select-kind"
+	bind:value={selectedKind}
+	onchange={() => {
+		if (selectedKind !== undefined) {
+			setMahjongKind(selectedKind);
+			refetch();
+		}
+	}}
+>
+	<option value={42}>ログ保存あり</option>
+	<option value={20000}>ログ保存なし</option>
 </select>
 <button
 	title="最初から"

@@ -149,6 +149,9 @@
 	const setMahjongChannelId = (value: string) => {
 		mahjongChannelId = value;
 	};
+	const setMahjongKind = (value: number) => {
+		mahjongKind = value;
+	};
 	const setMahjongChannelEvents = (value: Map<string, NostrEvent | undefined>) => {
 		mahjongChannelEvents.clear();
 		for (const [k, v] of value) {
@@ -546,6 +549,7 @@
 		status={status.get(mahjongChannelId)?.content}
 		{isStoppedReplay}
 		{setMahjongChannelId}
+		{setMahjongKind}
 		{setIsStoppedReplay}
 		{setSleepInterval}
 		{replay}
