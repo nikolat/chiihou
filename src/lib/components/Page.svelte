@@ -38,7 +38,7 @@
 		NostrEvent | undefined
 	>();
 	let mahjongKind: number = $state(42);
-	let geohash: string = $state('xnf9bnmc');
+	let geohash: string = $state('x58u0w7');
 	let events: NostrEvent[] = $state([]);
 	let chatEvents: NostrEvent[] = $state([]);
 	let status: SvelteMap<string, NostrEvent | undefined> = new SvelteMap<
