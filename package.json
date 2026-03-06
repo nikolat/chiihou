@@ -15,6 +15,7 @@
 		"test": "npm run test:unit -- --run"
 	},
 	"dependencies": {
+		"@konemono/nostr-login": "^1.14.1",
 		"@rx-nostr/crypto": "^0.0.0",
 		"nostr-tools": "^2.23.3",
 		"rx-nostr": "^3.6.2"

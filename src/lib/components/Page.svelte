@@ -199,7 +199,9 @@
 		sendDapai(rxNostr, pai, ev, sutehaiCommand, setSutehaiCommand);
 	};
 
-	onMount(() => {
+	onMount(async () => {
+		const { init } = await import('@konemono/nostr-login');
+		init({});
 		document.addEventListener('nlAuth', (e) => {
 			const ce: CustomEvent = e as CustomEvent;
 			if (ce.detail.type === 'login' || ce.detail.type === 'signup') {
@@ -532,7 +534,6 @@
 <svelte:head>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
 	<script type="module" src="https://cdn.jsdelivr.net/npm/nostr-zap@latest"></script>
-	<script type="module" src="https://www.unpkg.com/nostr-login@latest/dist/unpkg.js"></script>
 	<title>地鳳</title>
 </svelte:head>
 
