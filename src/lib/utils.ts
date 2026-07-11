@@ -149,7 +149,7 @@ export const fetchEventsToReplay = (
 		}
 		await replay(events.toReversed(), RxReqMode.Backward);
 		let eventsQueue: NostrEvent[] = [];
-		let timer: number;
+		let timer: NodeJS.Timeout;
 		const rxReqF = createRxForwardReq();
 		const subscriptionF = rxNostr
 			.use(rxReqF)

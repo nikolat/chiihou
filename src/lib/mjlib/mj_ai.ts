@@ -111,7 +111,7 @@ export const naniwokiru = (
 							elementPoint += 20 * nNokori;
 						} else if ((t1 === 1 && t2 === 2) || (t1 === 8 && t2 === 9)) {
 							//辺張
-							let nNokori = 0;
+							let nNokori: number;
 							if (t1 === 1) {
 								nNokori = 4 - arVisibleNum[sortCode.indexOf(`3${color}`)];
 							} else {
