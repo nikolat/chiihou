@@ -587,49 +587,51 @@
 	<section id="players">
 		<h2>Players</h2>
 		<dl class="players">
-			{#each Array.from(players.entries()) as [key, value] (key)}
-				{@const isAgariPlayer = agariPlayer !== undefined && agariPlayer === key}
-				{@const isFurikomiPlayer = furikomiPlayer !== undefined && furikomiPlayer === key}
-				<Player
-					{key}
-					{value}
-					{sekijun}
-					{tehai}
-					{sutehai}
-					{lastEventsToReply}
-					{last_created_at}
-					{requestedCommand}
-					{kaze}
-					{points}
-					{pointDiff}
-					{rxNostr}
-					{mahjongChannelId}
-					{mahjongServerPubkey}
-					{mahjongKind}
-					{geohash}
-					{loginPubkey}
-					status={status.get(mahjongChannelId)?.content}
-					{nakuKinds}
-					{sutehaiSaved}
-					{doras}
-					{sutehaiCommand}
-					{tsumohai}
-					{nokori}
-					{setSutehai}
-					{richiJunme}
-					{callSendDapai}
-					{say}
-					{pubkeysToOpenTehai}
-					{furoJunme}
-					{furoHistory}
-					{kakanHistory}
-					{sutehaiPlayerSaved}
-					{isAgariPlayer}
-					{isFurikomiPlayer}
-					{isKyokuEnd}
-					{isGameEnd}
-				/>
-			{/each}
+			{#if !status.get(mahjongChannelId)?.content?.startsWith('募集中')}
+				{#each Array.from(players.entries()) as [key, value] (key)}
+					{@const isAgariPlayer = agariPlayer !== undefined && agariPlayer === key}
+					{@const isFurikomiPlayer = furikomiPlayer !== undefined && furikomiPlayer === key}
+					<Player
+						{key}
+						{value}
+						{sekijun}
+						{tehai}
+						{sutehai}
+						{lastEventsToReply}
+						{last_created_at}
+						{requestedCommand}
+						{kaze}
+						{points}
+						{pointDiff}
+						{rxNostr}
+						{mahjongChannelId}
+						{mahjongServerPubkey}
+						{mahjongKind}
+						{geohash}
+						{loginPubkey}
+						status={status.get(mahjongChannelId)?.content}
+						{nakuKinds}
+						{sutehaiSaved}
+						{doras}
+						{sutehaiCommand}
+						{tsumohai}
+						{nokori}
+						{setSutehai}
+						{richiJunme}
+						{callSendDapai}
+						{say}
+						{pubkeysToOpenTehai}
+						{furoJunme}
+						{furoHistory}
+						{kakanHistory}
+						{sutehaiPlayerSaved}
+						{isAgariPlayer}
+						{isFurikomiPlayer}
+						{isKyokuEnd}
+						{isGameEnd}
+					/>
+				{/each}
+			{/if}
 		</dl>
 	</section>
 	<section id="log" class={loginPubkey === undefined ? '' : 'hidden'}>
